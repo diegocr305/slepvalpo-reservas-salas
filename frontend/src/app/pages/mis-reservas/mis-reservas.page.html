@@ -1,0 +1,129 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Mis Reservas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Mis Reservas</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- Refresher -->
+  <ion-refresher slot="fixed" (ionRefresh)="cargarReservas($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Loading -->
+  <div *ngIf="cargando && reservas.length === 0" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando reservas...</p>
+  </div>
+
+  <!-- Sin reservas -->
+  <div *ngIf="!cargando && reservas.length === 0" class="ion-text-center ion-padding">
+    <ion-icon name="calendar-outline" size="large" color="medium"></ion-icon>
+    <h2>No tienes reservas</h2>
+    <p>Crea tu primera reserva para comenzar</p>
+    <ion-button routerLink="/reservar" expand="block">
+      <ion-icon name="add" slot="start"></ion-icon>
+      Nueva Reserva
+    </ion-button>
+  </div>
+
+  <!-- Lista de reservas -->
+  <div *ngIf="reservas.length > 0">
+    <ion-card *ngFor="let reserva of reservas">
+      <ion-card-header>
+        <ion-card-title>
+          {{reserva.sala_nombre}}
+          <ion-chip [color]="getColorEstado(reserva.estado)">
+            <ion-icon [name]="getIconoEstado(reserva.estado)"></ion-icon>
+            <ion-label>{{reserva.estado | titlecase}}</ion-label>
+          </ion-chip>
+        </ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <ion-list>
+          <ion-item>
+            <ion-icon name="business-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Edificio</h3>
+              <p>{{reserva.edificio_nombre}}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item>
+            <ion-icon name="calendar-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Fecha</h3>
+              <p>{{reserva.fecha | date:'fullDate':'':'es-ES'}}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item>
+            <ion-icon name="time-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Horario</h3>
+              <p>{{reserva.hora_inicio}} - {{reserva.hora_fin}}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item>
+            <ion-icon name="document-text-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Propósito</h3>
+              <p>{{reserva.proposito}}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item *ngIf="reserva.checkin_realizado">
+            <ion-icon name="checkmark-circle" slot="start" color="success"></ion-icon>
+            <ion-label>
+              <h3>Check-in Realizado</h3>
+              <p>{{reserva.checkin_timestamp | date:'short':'':'es-ES'}}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+
+        <!-- Acciones -->
+        <div class="ion-margin-top" *ngIf="puedeEditar(reserva)">
+          <ion-button 
+            fill="outline" 
+            color="danger"
+            (click)="cancelarReserva(reserva)">
+            <ion-icon name="close-circle-outline" slot="start"></ion-icon>
+            Cancelar Reserva
+          </ion-button>
+
+          <ion-button 
+            fill="outline" 
+            color="primary"
+            [routerLink]="['/checkin', reserva.id]"
+            *ngIf="!reserva.checkin_realizado">
+            <ion-icon name="qr-code-outline" slot="start"></ion-icon>
+            Check-in
+          </ion-button>
+        </div>
+
+        <!-- Información adicional -->
+        <div class="ion-margin-top" *ngIf="esReservaPasada(reserva) && reserva.estado === 'confirmada'">
+          <ion-chip color="medium">
+            <ion-icon name="time-outline"></ion-icon>
+            <ion-label>Reserva pasada</ion-label>
+          </ion-chip>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Botón flotante para nueva reserva -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button routerLink="/reservar">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

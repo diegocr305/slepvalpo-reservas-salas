@@ -1,157 +1,401 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/calendario"></ion-back-button>
-    </ion-buttons>
-    <ion-title>Nueva Reserva</ion-title>
+    <ion-title>Reservar Sala</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Reservar Sala</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <!-- Selección de fecha con navegación -->
+  <div class="fecha-selector">
+    <div class="fecha-navegacion">
+      <ion-button fill="outline" size="small" (click)="abrirCalendario()" id="fecha-trigger">
+        <ion-icon name="calendar-outline" slot="start"></ion-icon>
+        Ir a la fecha
+      </ion-button>
+      
+      <div class="navegacion-fechas">
+        <button 
+          class="flecha-btn" 
+          (click)="cambiarFecha(-1)"
+          type="button">
+          &#8249;
+        </button>
+        
+        <div class="fecha-grande">{{fechaFormateada}}</div>
+        
+        <button 
+          class="flecha-btn" 
+          (click)="cambiarFecha(1)"
+          type="button">
+          &#8250;
+        </button>
+      </div>
+    </div>
 
-  <form (ngSubmit)="guardarReserva()">
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Detalles de la Reserva</ion-card-title>
-      </ion-card-header>
-
-      <ion-card-content>
-        <!-- Fecha -->
-        <ion-item>
-          <ion-label position="stacked">Fecha *</ion-label>
+    <!-- Popover del calendario -->
+    <ion-popover trigger="fecha-trigger" [isOpen]="mostrarCalendario" (didDismiss)="mostrarCalendario = false">
+      <ng-template>
+        <ion-content>
           <ion-datetime 
-            presentation="date" 
-            [(ngModel)]="reserva.fecha"
-            name="fecha"
-            (ionChange)="onFechaChange()"
-            [min]="new Date().toISOString()"
+            [(ngModel)]="fechaSeleccionada"
+            presentation="date"
             locale="es-ES"
-            required>
+            [min]="fechaMinima"
+            (ionChange)="onFechaChange()">
           </ion-datetime>
-        </ion-item>
+        </ion-content>
+      </ng-template>
+    </ion-popover>
+  </div>
 
-        <!-- Sala -->
-        <ion-item>
-          <ion-label position="stacked">Sala *</ion-label>
-          <ion-select 
-            [(ngModel)]="reserva.sala_id" 
-            name="sala"
-            (ionChange)="onSalaChange()"
-            placeholder="Selecciona una sala"
-            required>
-            <ion-select-option 
-              *ngFor="let sala of salas" 
-              [value]="sala.id">
-              {{sala.nombre}} - {{sala.edificio?.nombre}} ({{sala.capacidad}} personas)
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
+  <div class="edificio-selector">
+    <ion-segment [(ngModel)]="edificioSeleccionado" (ionChange)="onEdificioChange()">
+      <ion-segment-button value="blanco">
+        <ion-label>Edificio Blanco</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="cochrane">
+        <ion-label>Edificio Cochrane</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
 
-        <!-- Hora de inicio -->
-        <ion-item>
-          <ion-label position="stacked">Hora de Inicio *</ion-label>
-          <ion-select 
-            [(ngModel)]="reserva.hora_inicio" 
-            name="horaInicio"
-            (ionChange)="onHoraInicioChange()"
-            required>
-            <ion-select-option 
-              *ngFor="let hora of horasDisponibles" 
-              [value]="hora">
-              {{hora}}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
+  <!-- Título de disponibilidad -->
+  <div class="seccion-titulo">
+    <h3>Disponibilidad de Salas</h3>
+  </div>
 
-        <!-- Hora de fin -->
-        <ion-item>
-          <ion-label position="stacked">Hora de Fin *</ion-label>
-          <ion-select 
-            [(ngModel)]="reserva.hora_fin" 
-            name="horaFin"
-            required>
-            <ion-select-option 
-              *ngFor="let hora of horasDisponibles" 
-              [value]="hora"
-              [disabled]="hora <= reserva.hora_inicio">
-              {{hora}}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
+  <!-- Grilla de horarios -->
+  <div class="grilla-container">
+    <!-- Encabezados de horarios -->
+    <div class="horarios-header">
+      <div class="sala-column-header">Sala</div>
+      <div class="horarios-grid">
+        <div *ngFor="let horario of horarios" class="horario-header">
+          {{horario}}
+        </div>
+      </div>
+    </div>
 
-        <!-- Propósito -->
-        <ion-item>
-          <ion-label position="stacked">Propósito de la Reunión *</ion-label>
-          <ion-textarea 
-            [(ngModel)]="reserva.proposito"
-            name="proposito"
-            placeholder="Describe brevemente el propósito de la reunión"
-            rows="3"
-            maxlength="500"
-            required>
-          </ion-textarea>
-        </ion-item>
-      </ion-card-content>
-    </ion-card>
+    <!-- Filas de salas -->
+    <div class="salas-container">
+      <div *ngFor="let sala of salasDelEdificio" class="sala-row">
+        <div class="sala-info">
+          <div class="sala-nombre">{{sala.nombre}}</div>
+          <div class="sala-capacidad">{{sala.capacidad}} personas</div>
+        </div>
+        
+        <div class="horarios-grid">
+          <div 
+            *ngFor="let horario of horarios; let i = index"
+            class="horario-slot"
+            [class.disponible]="getEstadoHorario(sala.id, i) === 'disponible'"
+            [class.ocupado]="getEstadoHorario(sala.id, i) === 'ocupado'"
+            [class.mi-reserva]="getEstadoHorario(sala.id, i) === 'mi-reserva'"
+            [class.selected]="salaSeleccionada === sala.id && isHorarioSeleccionado(horario)"
+            (click)="toggleHorario(horario, sala.id, i)">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <!-- Resumen de la reserva -->
-    <ion-card *ngIf="reserva.sala_id && reserva.fecha">
-      <ion-card-header>
-        <ion-card-title>Resumen</ion-card-title>
-      </ion-card-header>
-      
-      <ion-card-content>
-        <ion-list>
-          <ion-item>
-            <ion-icon name="calendar-outline" slot="start"></ion-icon>
-            <ion-label>
-              <h3>Fecha</h3>
-              <p>{{reserva.fecha | date:'fullDate':'':'es-ES'}}</p>
-            </ion-label>
-          </ion-item>
-          
-          <ion-item>
-            <ion-icon name="time-outline" slot="start"></ion-icon>
-            <ion-label>
-              <h3>Horario</h3>
-              <p>{{reserva.hora_inicio}} - {{reserva.hora_fin}}</p>
-            </ion-label>
-          </ion-item>
-          
-          <ion-item>
-            <ion-icon name="business-outline" slot="start"></ion-icon>
-            <ion-label>
-              <h3>Sala</h3>
-              <p>{{getSalaNombre(reserva.sala_id)}}</p>
-            </ion-label>
-          </ion-item>
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
+  <!-- Leyenda -->
+  <div class="leyenda">
+    <div class="leyenda-item">
+      <div class="color-box disponible"></div>
+      <span>Disponible</span>
+    </div>
+    <div class="leyenda-item">
+      <div class="color-box ocupado"></div>
+      <span>Ocupado</span>
+    </div>
+    <div class="leyenda-item">
+      <div class="color-box mi-reserva"></div>
+      <span>Mi Reserva</span>
+    </div>
+    <div class="leyenda-item">
+      <div class="color-box selected"></div>
+      <span>Seleccionado</span>
+    </div>
+  </div>
 
-    <!-- Botones de acción -->
-    <ion-padding>
+  <!-- Resumen de selección -->
+  <ion-card *ngIf="salaSeleccionada && horariosSeleccionados.length > 0" class="resumen-card">
+    <ion-card-header>
+      <ion-card-title>📋 Resumen de Reserva</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="resumen-info">
+        <div><strong>Fecha:</strong> {{fechaFormateada}}</div>
+        <div><strong>Sala:</strong> {{getSalaNombre(salaSeleccionada)}} - {{edificioNombre}}</div>
+        <div><strong>Horarios:</strong> {{horariosTexto}}</div>
+      </div>
+
+      <ion-item>
+        <ion-label position="stacked">Propósito de la Reunión</ion-label>
+        <ion-textarea 
+          [(ngModel)]="proposito"
+          placeholder="Describe brevemente el propósito de la reunión"
+          rows="3">
+        </ion-textarea>
+      </ion-item>
+
       <ion-button 
         expand="block" 
-        type="submit"
-        [disabled]="guardando || cargando">
-        <ion-spinner *ngIf="guardando" slot="start"></ion-spinner>
-        {{guardando ? 'Guardando...' : 'Confirmar Reserva'}}
+        size="large"
+        (click)="confirmarReserva()"
+        [disabled]="puedeConfirmar">
+        Hacer una reserva
       </ion-button>
-      
-      <ion-button 
-        expand="block" 
-        fill="outline" 
-        color="medium"
-        routerLink="/calendario"
-        [disabled]="guardando">
-        Cancelar
-      </ion-button>
-    </ion-padding>
-  </form>
+    </ion-card-content>
+  </ion-card>
 </ion-content>
+
+<style>
+.fecha-selector {
+  padding: 20px 16px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.fecha-navegacion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.navegacion-fechas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.flecha-btn {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #666;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.flecha-btn:hover {
+  background: #f0f0f0;
+  color: #333;
+  border-color: #333;
+}
+
+.flecha-btn:active {
+  background: #e0e0e0;
+}
+
+.fecha-grande {
+  font-size: 2.5em;
+  font-weight: 900;
+  color: #000;
+  text-align: center;
+  flex: 1;
+  min-width: 300px;
+  line-height: 1.2;
+}
+
+.edificio-selector {
+  padding: 16px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.seccion-titulo {
+  padding: 16px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.seccion-titulo h3 {
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+.grilla-container {
+  background: white;
+  overflow-x: auto;
+}
+
+.horarios-header {
+  display: flex;
+  border-bottom: 2px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.sala-column-header {
+  width: 200px;
+  min-width: 200px;
+  padding: 12px;
+  font-weight: 600;
+  border-right: 1px solid #e0e0e0;
+}
+
+.horarios-grid {
+  display: flex;
+  flex: 1;
+}
+
+.horario-header {
+  flex: 1;
+  min-width: 90px;
+  padding: 8px 4px;
+  text-align: center;
+  font-size: 0.85em;
+  font-weight: 500;
+  border-right: 1px solid #e0e0e0;
+}
+
+.salas-container {
+  background: white;
+}
+
+.sala-row {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.sala-info {
+  width: 200px;
+  min-width: 200px;
+  padding: 12px;
+  border-right: 1px solid #e0e0e0;
+}
+
+.sala-nombre {
+  font-weight: 600;
+  color: #3880ff;
+  margin-bottom: 4px;
+}
+
+.sala-capacidad {
+  font-size: 0.85em;
+  color: #666;
+}
+
+.horario-slot {
+  flex: 1;
+  min-width: 90px;
+  height: 50px;
+  border-right: 1px solid #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.horario-slot.disponible {
+  background-color: #28a745;
+}
+
+.horario-slot.ocupado {
+  background-color: #dc3545;
+  cursor: not-allowed;
+}
+
+.horario-slot.mi-reserva {
+  background-color: #ffc107;
+}
+
+.horario-slot.selected {
+  background-color: #007bff;
+  box-shadow: inset 0 0 0 3px #ffffff;
+}
+
+.horario-slot:hover:not(.ocupado) {
+  opacity: 0.8;
+}
+
+.leyenda {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 16px;
+  background: #f8f9fa;
+  flex-wrap: wrap;
+}
+
+.leyenda-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9em;
+}
+
+.color-box {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+.color-box.disponible {
+  background-color: #28a745;
+}
+
+.color-box.ocupado {
+  background-color: #dc3545;
+}
+
+.color-box.mi-reserva {
+  background-color: #ffc107;
+}
+
+.color-box.selected {
+  background-color: #007bff;
+}
+
+.resumen-card {
+  margin: 16px;
+}
+
+.resumen-info {
+  margin-bottom: 16px;
+}
+
+.resumen-info div {
+  margin-bottom: 8px;
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .fecha-grande {
+    font-size: 2em;
+    min-width: 250px;
+  }
+  
+  .navegacion-fechas {
+    gap: 12px;
+  }
+  
+  .sala-column-header,
+  .sala-info {
+    width: 150px;
+    min-width: 150px;
+  }
+  
+  .horario-header,
+  .horario-slot {
+    min-width: 75px;
+  }
+  
+  .leyenda {
+    gap: 12px;
+  }
+}
+</style>

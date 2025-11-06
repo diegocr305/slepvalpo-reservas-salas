@@ -29,9 +29,10 @@ export class SupabaseService {
 
   // Autenticación
   async signInWithGoogle() {
-    return await this.supabase.auth.signInWithOAuth({
+    const { data, error } = await this.supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
+        redirectTo: `${window.location.origin}/tabs/calendario`,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
@@ -39,6 +40,8 @@ export class SupabaseService {
         }
       }
     });
+    
+    return { data, error };
   }
 
   async signInWithMicrosoft() {

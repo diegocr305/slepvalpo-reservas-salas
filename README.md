@@ -47,4 +47,11 @@ Sistema web para la reserva de salas de reunión en los edificios Blanco y Cochr
 
 ## 🔧 Configuración
 
+➡️ Para hacer un usuario admin:
+En Supabase SQL Editor:
+
+UPDATE usuarios 
+SET es_admin = true 
+WHERE email = 'tu-email@slepvalparaiso.cl';
+
 Ver documentación en `/docs/` para detalles de configuración y despliegue.

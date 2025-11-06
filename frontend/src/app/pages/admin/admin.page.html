@@ -1,0 +1,215 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Panel Administrativo</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Admin</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- Refresher -->
+  <ion-refresher slot="fixed" (ionRefresh)="cargarDatos($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Segmentos de navegación -->
+  <ion-segment value="{{vistaActual}}" (ionChange)="onSegmentChange($event)">
+    <ion-segment-button value="estadisticas">
+      <ion-label>Estadísticas</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="salas">
+      <ion-label>Gestión Salas</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="reservas">
+      <ion-label>Reservas</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- Vista Estadísticas -->
+  <div *ngIf="vistaActual === 'estadisticas'">
+    <!-- Métricas principales -->
+    <ion-grid>
+      <ion-row>
+        <ion-col size="6">
+          <ion-card>
+            <ion-card-content class="ion-text-center">
+              <h1>{{totalReservasHoy}}</h1>
+              <p>Reservas Hoy</p>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+        <ion-col size="6">
+          <ion-card>
+            <ion-card-content class="ion-text-center">
+              <h1>{{totalReservasMes}}</h1>
+              <p>Reservas Este Mes</p>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="6">
+          <ion-card>
+            <ion-card-content class="ion-text-center">
+              <h1>{{tasaNoShow | number:'1.1-1'}}%</h1>
+              <p>Tasa No-Show</p>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+        <ion-col size="6">
+          <ion-card>
+            <ion-card-content class="ion-text-center">
+              <h1>{{salas.length}}</h1>
+              <p>Salas Totales</p>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <!-- Salas más usadas -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Salas Más Utilizadas (Este Mes)</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let item of salasMasUsadas; let i = index">
+            <ion-badge slot="start" [color]="i === 0 ? 'warning' : i === 1 ? 'medium' : 'tertiary'">
+              {{i + 1}}
+            </ion-badge>
+            <ion-label>
+              <h3>{{item.sala}}</h3>
+              <p>{{item.count}} reservas</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Estadísticas mensuales -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Estadísticas por Sala</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let stat of estadisticas">
+            <ion-label>
+              <h3>{{stat.sala_nombre}} - {{stat.edificio_nombre}}</h3>
+              <p>{{stat.mes | date:'MMMM yyyy':'':'es-ES'}}</p>
+              <ion-grid>
+                <ion-row>
+                  <ion-col size="3">
+                    <ion-chip color="primary">
+                      <ion-label>{{stat.total_reservas}} Total</ion-label>
+                    </ion-chip>
+                  </ion-col>
+                  <ion-col size="3">
+                    <ion-chip color="success">
+                      <ion-label>{{stat.confirmadas}} OK</ion-label>
+                    </ion-chip>
+                  </ion-col>
+                  <ion-col size="3">
+                    <ion-chip color="warning">
+                      <ion-label>{{stat.canceladas}} Cancel</ion-label>
+                    </ion-chip>
+                  </ion-col>
+                  <ion-col size="3">
+                    <ion-chip color="danger">
+                      <ion-label>{{stat.no_shows}} No-Show</ion-label>
+                    </ion-chip>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Vista Gestión de Salas -->
+  <div *ngIf="vistaActual === 'salas'">
+    <ion-card *ngFor="let sala of salas">
+      <ion-card-header>
+        <ion-card-title>
+          {{sala.nombre}}
+          <ion-chip [color]="sala.activa ? 'success' : 'danger'">
+            {{sala.activa ? 'Activa' : 'Inactiva'}}
+          </ion-chip>
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item>
+            <ion-icon name="business-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Edificio</h3>
+              <p>{{sala.edificio?.nombre}}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="people-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Capacidad</h3>
+              <p>{{sala.capacidad}} personas</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6">
+              <ion-button 
+                expand="block" 
+                fill="outline"
+                [color]="sala.activa ? 'danger' : 'success'"
+                (click)="toggleSalaActiva(sala)">
+                <ion-icon [name]="sala.activa ? 'pause' : 'play'" slot="start"></ion-icon>
+                {{sala.activa ? 'Desactivar' : 'Activar'}}
+              </ion-button>
+            </ion-col>
+            <ion-col size="6">
+              <ion-button 
+                expand="block" 
+                fill="outline"
+                color="primary"
+                (click)="generarQRSala(sala.id)">
+                <ion-icon name="qr-code-outline" slot="start"></ion-icon>
+                Generar QR
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Vista Reservas Recientes -->
+  <div *ngIf="vistaActual === 'reservas'">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Reservas Recientes</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let reserva of reservasRecientes">
+            <ion-label>
+              <h3>{{reserva.sala_nombre}} - {{reserva.edificio_nombre}}</h3>
+              <p>{{reserva.fecha | date:'shortDate':'':'es-ES'}} | {{reserva.hora_inicio}} - {{reserva.hora_fin}}</p>
+              <p><strong>{{reserva.usuario_nombre}}</strong> - {{reserva.proposito}}</p>
+            </ion-label>
+            <ion-chip slot="end" [color]="getColorEstado(reserva.estado)">
+              {{reserva.estado | titlecase}}
+            </ion-chip>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

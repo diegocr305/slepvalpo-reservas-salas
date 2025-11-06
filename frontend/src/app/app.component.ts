@@ -1,18 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
-import { AuthService } from './services/auth.service';
+import { SupabaseService } from './services/supabase.service';
 
 @Component({
   selector: 'app-root',
-  templateUrl: 'app.component.html',
+  template: `
+    <ion-app>
+      <ion-router-outlet></ion-router-outlet>
+    </ion-app>
+  `,
   standalone: true,
   imports: [IonApp, IonRouterOutlet],
 })
 export class AppComponent implements OnInit {
-  constructor(private auth: AuthService) {}
+  constructor(private supabaseService: SupabaseService) {}
 
   ngOnInit() {
-    // Inicializar servicios de autenticación
-    console.log('🚀 Iniciando aplicación SLEP Reservas');
+    // Inicializar la sesión de Supabase
+    this.supabaseService.user$.subscribe();
   }
 }

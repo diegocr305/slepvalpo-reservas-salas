@@ -1,0 +1,7 @@
+{
+  "name": "slepvalpo-reservas-frontend",
+  "integrations": {
+    "@angular/cli": {}
+  },
+  "type": "angular"
+}

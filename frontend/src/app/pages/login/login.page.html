@@ -1,0 +1,66 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>SLEP Valparaíso</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="login-container">
+    <ion-card>
+      <ion-card-content class="ion-text-center">
+        <img src="assets/logo-slep.png" alt="SLEP Valparaíso" class="logo" />
+        
+        <h1>Sistema de Reservas</h1>
+        <h2>Salas de Reunión</h2>
+        
+        <p>Inicia sesión con tu cuenta institucional</p>
+        
+        <ion-button 
+          expand="block" 
+          size="large"
+          (click)="loginWithGoogle()"
+          [disabled]="loading"
+          class="google-btn">
+          <ion-spinner *ngIf="loading" slot="start"></ion-spinner>
+          <ion-icon *ngIf="!loading" name="logo-google" slot="start"></ion-icon>
+          {{ loading ? 'Iniciando sesión...' : 'Iniciar con Google Workspace' }}
+        </ion-button>
+        
+        <ion-text color="medium">
+          <p><small>Solo usuarios &#64;slepvalparaiso.cl</small></p>
+        </ion-text>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
+
+<style>
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+}
+
+.logo {
+  width: 120px;
+  height: 120px;
+  margin: 20px auto;
+}
+
+.google-btn {
+  margin: 30px 0;
+  --background: #4285f4;
+}
+
+h1 {
+  color: #1976d2;
+  margin: 20px 0 10px 0;
+}
+
+h2 {
+  color: #666;
+  font-weight: normal;
+  margin: 0 0 30px 0;
+}
+</style>
