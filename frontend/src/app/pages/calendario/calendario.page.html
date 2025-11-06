@@ -1,0 +1,115 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Calendario de Reservas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Calendario</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- Filtros -->
+  <ion-card>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="6">
+            <ion-item>
+              <ion-label position="stacked">Fecha</ion-label>
+              <ion-datetime 
+                presentation="date" 
+                [(ngModel)]="fechaSeleccionada"
+                (ionChange)="onFechaChange()"
+                locale="es-ES">
+              </ion-datetime>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-md="6">
+            <ion-item>
+              <ion-label position="stacked">Sala (Opcional)</ion-label>
+              <ion-select 
+                [(ngModel)]="salaSeleccionada" 
+                (ionChange)="onSalaChange()"
+                placeholder="Todas las salas">
+                <ion-select-option [value]="null">Todas las salas</ion-select-option>
+                <ion-select-option 
+                  *ngFor="let sala of salas" 
+                  [value]="sala.id">
+                  {{sala.nombre}} - {{sala.edificio?.nombre}}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Loading -->
+  <div *ngIf="cargando" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando calendario...</p>
+  </div>
+
+  <!-- Vista de calendario por salas -->
+  <div *ngIf="!cargando">
+    <ion-card *ngFor="let sala of salas">
+      <ion-card-header>
+        <ion-card-title>
+          {{sala.nombre}}
+          <ion-badge color="medium">{{sala.edificio?.nombre}}</ion-badge>
+        </ion-card-title>
+        <ion-card-subtitle>
+          Capacidad: {{sala.capacidad}} personas
+        </ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Reservas existentes -->
+        <div *ngIf="getReservasPorSala(sala.id).length > 0">
+          <h4>Reservas del día</h4>
+          <ion-chip 
+            *ngFor="let reserva of getReservasPorSala(sala.id)"
+            [color]="getColorEstado(reserva.estado)">
+            <ion-icon name="time-outline"></ion-icon>
+            <ion-label>
+              {{reserva.hora_inicio}} - {{reserva.hora_fin}}
+              <br>
+              <small>{{reserva.usuario_nombre}}</small>
+            </ion-label>
+          </ion-chip>
+        </div>
+
+        <!-- Horas disponibles -->
+        <div *ngIf="getHorasDisponibles(sala.id).length > 0">
+          <h4>Horarios disponibles</h4>
+          <ion-chip 
+            *ngFor="let hora of getHorasDisponibles(sala.id)"
+            color="success"
+            (click)="navegarAReservar(sala.id, hora)">
+            <ion-icon name="add-circle-outline"></ion-icon>
+            <ion-label>{{hora}}</ion-label>
+          </ion-chip>
+        </div>
+
+        <!-- Sin disponibilidad -->
+        <div *ngIf="getHorasDisponibles(sala.id).length === 0 && getReservasPorSala(sala.id).length > 0">
+          <ion-chip color="danger">
+            <ion-icon name="close-circle-outline"></ion-icon>
+            <ion-label>Sin horarios disponibles</ion-label>
+          </ion-chip>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Botón flotante para nueva reserva -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="navegarAReservar()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

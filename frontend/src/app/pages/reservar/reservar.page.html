@@ -1,0 +1,157 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/calendario"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Nueva Reserva</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Reservar Sala</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <form (ngSubmit)="guardarReserva()">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Detalles de la Reserva</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Fecha -->
+        <ion-item>
+          <ion-label position="stacked">Fecha *</ion-label>
+          <ion-datetime 
+            presentation="date" 
+            [(ngModel)]="reserva.fecha"
+            name="fecha"
+            (ionChange)="onFechaChange()"
+            [min]="new Date().toISOString()"
+            locale="es-ES"
+            required>
+          </ion-datetime>
+        </ion-item>
+
+        <!-- Sala -->
+        <ion-item>
+          <ion-label position="stacked">Sala *</ion-label>
+          <ion-select 
+            [(ngModel)]="reserva.sala_id" 
+            name="sala"
+            (ionChange)="onSalaChange()"
+            placeholder="Selecciona una sala"
+            required>
+            <ion-select-option 
+              *ngFor="let sala of salas" 
+              [value]="sala.id">
+              {{sala.nombre}} - {{sala.edificio?.nombre}} ({{sala.capacidad}} personas)
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Hora de inicio -->
+        <ion-item>
+          <ion-label position="stacked">Hora de Inicio *</ion-label>
+          <ion-select 
+            [(ngModel)]="reserva.hora_inicio" 
+            name="horaInicio"
+            (ionChange)="onHoraInicioChange()"
+            required>
+            <ion-select-option 
+              *ngFor="let hora of horasDisponibles" 
+              [value]="hora">
+              {{hora}}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Hora de fin -->
+        <ion-item>
+          <ion-label position="stacked">Hora de Fin *</ion-label>
+          <ion-select 
+            [(ngModel)]="reserva.hora_fin" 
+            name="horaFin"
+            required>
+            <ion-select-option 
+              *ngFor="let hora of horasDisponibles" 
+              [value]="hora"
+              [disabled]="hora <= reserva.hora_inicio">
+              {{hora}}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Propósito -->
+        <ion-item>
+          <ion-label position="stacked">Propósito de la Reunión *</ion-label>
+          <ion-textarea 
+            [(ngModel)]="reserva.proposito"
+            name="proposito"
+            placeholder="Describe brevemente el propósito de la reunión"
+            rows="3"
+            maxlength="500"
+            required>
+          </ion-textarea>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Resumen de la reserva -->
+    <ion-card *ngIf="reserva.sala_id && reserva.fecha">
+      <ion-card-header>
+        <ion-card-title>Resumen</ion-card-title>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <ion-list>
+          <ion-item>
+            <ion-icon name="calendar-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Fecha</h3>
+              <p>{{reserva.fecha | date:'fullDate':'':'es-ES'}}</p>
+            </ion-label>
+          </ion-item>
+          
+          <ion-item>
+            <ion-icon name="time-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Horario</h3>
+              <p>{{reserva.hora_inicio}} - {{reserva.hora_fin}}</p>
+            </ion-label>
+          </ion-item>
+          
+          <ion-item>
+            <ion-icon name="business-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Sala</h3>
+              <p>{{getSalaNombre(reserva.sala_id)}}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Botones de acción -->
+    <ion-padding>
+      <ion-button 
+        expand="block" 
+        type="submit"
+        [disabled]="guardando || cargando">
+        <ion-spinner *ngIf="guardando" slot="start"></ion-spinner>
+        {{guardando ? 'Guardando...' : 'Confirmar Reserva'}}
+      </ion-button>
+      
+      <ion-button 
+        expand="block" 
+        fill="outline" 
+        color="medium"
+        routerLink="/calendario"
+        [disabled]="guardando">
+        Cancelar
+      </ion-button>
+    </ion-padding>
+  </form>
+</ion-content>
