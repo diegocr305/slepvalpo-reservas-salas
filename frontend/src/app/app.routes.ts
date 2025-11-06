@@ -4,11 +4,15 @@ import { AuthGuard } from './guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/login',
+    redirectTo: 'login',
     pathMatch: 'full',
   },
   {
     path: 'login',
+    loadComponent: () => import('./pages/login/login.page').then(m => m.LoginPage)
+  },
+  {
+    path: 'auth/callback',
     loadComponent: () => import('./pages/login/login.page').then(m => m.LoginPage)
   },
   {
@@ -26,7 +30,7 @@ export const routes: Routes = [
       },
       {
         path: '',
-        redirectTo: '/tabs/calendario',
+        redirectTo: '/tabs/reservar',
         pathMatch: 'full'
       }
     ]

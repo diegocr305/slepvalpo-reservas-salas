@@ -22,7 +22,7 @@ export class LoginPage implements OnInit {
     // Si ya está autenticado, redirigir
     this.supabaseService.user$.subscribe(user => {
       if (user) {
-        this.router.navigate(['/tabs/calendario']);
+        this.router.navigate(['/tabs/reservar']);
       }
     });
   }

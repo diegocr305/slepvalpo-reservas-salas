@@ -7,16 +7,28 @@ import { BehaviorSubject, Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class SupabaseService {
-  private supabase: SupabaseClient;
+  public supabase: SupabaseClient;
   private currentUser = new BehaviorSubject<User | null>(null);
 
   constructor() {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
     
+    // Verificar sesión existente al inicializar
+    this.checkSession();
+    
     // Escuchar cambios de autenticación
-    this.supabase.auth.onAuthStateChange((event, session) => {
-      this.currentUser.next(session?.user ?? null);
+    this.supabase.auth.onAuthStateChange(async (event, session) => {
+      const user = session?.user ?? null;
+      this.currentUser.next(user);
     });
+  }
+
+  private async checkSession() {
+    const { data: { session } } = await this.supabase.auth.getSession();
+    
+    if (session?.user) {
+      this.currentUser.next(session.user);
+    }
   }
 
   get user$(): Observable<User | null> {
@@ -32,7 +44,7 @@ export class SupabaseService {
     const { data, error } = await this.supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/tabs/calendario`,
+        redirectTo: `${window.location.origin}/auth/callback`,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
@@ -122,4 +134,97 @@ export class SupabaseService {
       .select('*')
       .order('mes', { ascending: false });
   }
+
+  // Obtener edificios
+  async getEdificios() {
+    return await this.supabase
+      .from('edificios')
+      .select('*')
+      .order('nombre');
+  }
+
+  // Obtener salas con información del edificio
+  async getSalas() {
+    return await this.supabase
+      .from('salas')
+      .select(`
+        *,
+        edificios (
+          id,
+          nombre
+        )
+      `)
+      .eq('activa', true)
+      .order('edificio_id')
+      .order('nombre');
+  }
+
+  // Obtener salas por edificio
+  async getSalasPorEdificio(edificioId: number) {
+    return await this.supabase
+      .from('salas')
+      .select(`
+        *,
+        edificios (
+          id,
+          nombre
+        )
+      `)
+      .eq('edificio_id', edificioId)
+      .eq('activa', true)
+      .order('nombre');
+  }
+
+  // Crear reserva
+  async crearReserva(reservaData: any) {
+    return await this.supabase
+      .from('reservas')
+      .insert({
+        fecha: reservaData.fecha,
+        hora_inicio: reservaData.hora_inicio,
+        hora_fin: reservaData.hora_fin,
+        sala_id: reservaData.sala_id,
+        usuario_id: reservaData.usuario_id,
+        proposito: reservaData.proposito,
+        estado: 'confirmada'
+      })
+      .select();
+  }
+
+  // Verificar disponibilidad de sala
+  async verificarDisponibilidad(fecha: string, salaId: number, horaInicio: string, horaFin: string) {
+    return await this.supabase
+      .from('reservas')
+      .select('*')
+      .eq('fecha', fecha)
+      .eq('sala_id', salaId)
+      .eq('estado', 'confirmada')
+      .or(`and(hora_inicio.lte.${horaInicio},hora_fin.gt.${horaInicio}),and(hora_inicio.lt.${horaFin},hora_fin.gte.${horaFin}),and(hora_inicio.gte.${horaInicio},hora_fin.lte.${horaFin})`);
+  }
+
+  // Obtener reservas por fecha y sala
+  async getReservasPorFechaYSala(fecha: string, salaId?: number) {
+    let query = this.supabase
+      .from('reservas')
+      .select('*')
+      .eq('fecha', fecha)
+      .eq('estado', 'confirmada');
+    
+    if (salaId) {
+      query = query.eq('sala_id', salaId);
+    }
+    
+    return await query.order('hora_inicio');
+  }
+
+  // Eliminar reserva
+  async eliminarReserva(reservaId: string) {
+    return await this.supabase
+      .from('reservas')
+      .delete()
+      .eq('id', reservaId)
+      .select();
+  }
+
+
 }

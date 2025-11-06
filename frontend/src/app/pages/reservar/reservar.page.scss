@@ -1,0 +1,362 @@
+.header-logo {
+  max-height: 40px;
+  width: auto;
+  margin-right: 10px;
+}
+
+// Fecha principal centrada
+.fecha-principal {
+  text-align: center;
+  padding: 40px 16px 30px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+// Navegación de fecha con flechas
+.fecha-navegacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  
+  h1 {
+    font-size: 2.4em;
+    font-weight: 700;
+    color: #3880ff;
+    margin: 0;
+    text-transform: capitalize;
+    line-height: 1.2;
+    flex: 1;
+    max-width: 600px;
+  }
+}
+
+// Flechas de navegación
+.flecha-btn {
+  width: 45px;
+  height: 45px;
+  border: 2px solid #3880ff;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: #3880ff;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: #3880ff;
+    color: white;
+    transform: scale(1.05);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// Botones de acción
+.botones-accion {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  
+  ion-button {
+    --border-width: 2px;
+    font-weight: 500;
+  }
+}
+
+
+
+.edificio-selector {
+  padding: 16px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.seccion-titulo {
+  padding: 16px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.seccion-titulo h3 {
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+.grilla-container {
+  background: white;
+  overflow-x: auto;
+}
+
+.horarios-header {
+  display: flex;
+  border-bottom: 2px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.sala-column-header {
+  width: 200px;
+  min-width: 200px;
+  padding: 12px;
+  font-weight: 600;
+  border-right: 1px solid #e0e0e0;
+}
+
+.horarios-grid {
+  display: flex;
+  flex: 1;
+}
+
+.horario-header {
+  flex: 1;
+  min-width: 90px;
+  padding: 8px 4px;
+  text-align: center;
+  font-size: 0.85em;
+  font-weight: 500;
+  border-right: 1px solid #e0e0e0;
+}
+
+.salas-container {
+  background: white;
+}
+
+.sala-row {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.sala-info {
+  width: 200px;
+  min-width: 200px;
+  padding: 12px;
+  border-right: 1px solid #e0e0e0;
+}
+
+.sala-nombre {
+  font-weight: 600;
+  color: #3880ff;
+  margin-bottom: 4px;
+}
+
+.sala-capacidad {
+  font-size: 0.85em;
+  color: #666;
+}
+
+.horario-slot {
+  flex: 1;
+  min-width: 90px;
+  height: 50px;
+  border-right: 1px solid #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.horario-slot.disponible {
+  background-color: #28a745;
+}
+
+.horario-slot.ocupado {
+  background-color: #dc3545;
+  cursor: not-allowed;
+}
+
+.horario-slot.mi-reserva {
+  background-color: #ffc107;
+}
+
+.horario-slot.selected {
+  background-color: #007bff;
+  box-shadow: inset 0 0 0 3px #ffffff;
+}
+
+.horario-slot:hover:not(.ocupado) {
+  opacity: 0.8;
+  transform: scale(1.02);
+}
+
+.leyenda {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 16px;
+  background: #f8f9fa;
+  flex-wrap: wrap;
+}
+
+.leyenda-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9em;
+}
+
+.color-box {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+.color-box.disponible {
+  background-color: #28a745;
+}
+
+.color-box.ocupado {
+  background-color: #dc3545;
+}
+
+.color-box.mi-reserva {
+  background-color: #ffc107;
+}
+
+.color-box.selected {
+  background-color: #007bff;
+}
+
+.resumen-card {
+  margin: 16px;
+}
+
+.resumen-info {
+  margin-bottom: 16px;
+}
+
+.resumen-info div {
+  margin-bottom: 8px;
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+// Estilos para el datetime en modal
+ion-modal ion-datetime {
+  --background: #ffffff;
+  --color: #000000;
+  
+  // Personalizar colores
+  --ion-color-primary: #3880ff;
+  --ion-color-primary-rgb: 56, 128, 255;
+  --ion-color-primary-contrast: #ffffff;
+}
+
+// Personalizar calendario en modal
+ion-modal {
+  // Mostrar el mes pero sin dropdown
+  .calendar-month-year {
+    pointer-events: none !important;
+    
+    // Ocultar solo la flecha del dropdown
+    ion-icon[name="chevron-down"] {
+      display: none !important;
+    }
+  }
+  
+  // Mantener las flechas de navegación funcionando
+  .calendar-next-prev {
+    pointer-events: all !important;
+  }
+  
+  .calendar-next-prev ion-button {
+    pointer-events: all !important;
+  }
+  
+  // Hacer que las fechas sean más clickeables
+  .calendar-day {
+    cursor: pointer !important;
+  }
+}
+
+// Botones del calendario
+.botones-calendario {
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  border-top: 1px solid #e0e0e0;
+  background: #f8f9fa;
+  
+  ion-button {
+    flex: 1;
+    max-width: 120px;
+  }
+}
+
+// Responsive
+@media (max-width: 1200px) {
+  .fecha-navegacion h1 {
+    font-size: 2em;
+  }
+}
+
+@media (max-width: 768px) {
+  .fecha-principal {
+    padding: 30px 16px 25px;
+  }
+  
+  .fecha-navegacion {
+    gap: 15px;
+    margin-bottom: 16px;
+    
+    h1 {
+      font-size: 1.8em;
+    }
+  }
+  
+  .flecha-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+  
+  .botones-accion {
+    gap: 8px;
+  }
+  
+  .sala-column-header,
+  .sala-info {
+    width: 150px;
+    min-width: 150px;
+  }
+  
+  .horario-header,
+  .horario-slot {
+    min-width: 75px;
+  }
+  
+  .leyenda {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .fecha-principal {
+    padding: 25px 12px 20px;
+  }
+  
+  .fecha-navegacion {
+    gap: 10px;
+    
+    h1 {
+      font-size: 1.5em;
+    }
+  }
+  
+  .flecha-btn {
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+  }
+  
+
+}
