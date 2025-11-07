@@ -36,10 +36,13 @@ export class AuthService {
 
   private async initializeAuth() {
     this.supabase.user$.subscribe(async (user) => {
+      console.log('🔐 Cambio en autenticación:', user);
       if (user) {
+        console.log('✅ Usuario autenticado:', user.id);
         this.isAuthenticated.next(true);
         await this.loadUserProfile(user.id);
       } else {
+        console.log('❌ Usuario no autenticado');
         this.isAuthenticated.next(false);
         this.currentUserProfile.next(null);
       }
@@ -47,19 +50,24 @@ export class AuthService {
   }
 
   private async loadUserProfile(userId: string) {
+    console.log('🔍 Cargando perfil de usuario para ID:', userId);
     try {
       const { data, error } = await this.supabase.select('usuarios', '*', { id: userId });
+      
+      console.log('📊 Respuesta de usuarios:', { data, error });
       
       if (error) throw error;
       
       if (data && data.length > 0) {
-        this.currentUserProfile.next(data[0]);
+        console.log('✅ Perfil encontrado:', data[0]);
+        this.currentUserProfile.next(data[0] as unknown as Usuario);
       } else {
+        console.log('🆕 Usuario no existe, creando perfil...');
         // Crear perfil de usuario si no existe
         await this.createUserProfile(userId);
       }
     } catch (error) {
-      console.error('Error cargando perfil de usuario:', error);
+      console.error('❌ Error cargando perfil de usuario:', error);
     }
   }
 
@@ -70,7 +78,7 @@ export class AuthService {
     const newUser: Partial<Usuario> = {
       id: userId,
       email: user.email!,
-      nombre_completo: user.user_metadata?.full_name || user.email!,
+      nombre_completo: user.user_metadata?.['full_name'] || user.email!,
       es_admin: false,
       activo: true
     };
@@ -79,7 +87,9 @@ export class AuthService {
       const { data, error } = await this.supabase.insert('usuarios', newUser);
       if (error) throw error;
       
-      this.currentUserProfile.next(data[0]);
+      if (data && data[0]) {
+        this.currentUserProfile.next(data[0] as Usuario);
+      }
     } catch (error) {
       console.error('Error creando perfil de usuario:', error);
     }

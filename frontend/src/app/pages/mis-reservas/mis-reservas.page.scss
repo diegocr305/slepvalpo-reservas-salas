@@ -1,0 +1,86 @@
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  text-align: center;
+}
+
+.loading-container ion-spinner {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 16px;
+}
+
+.loading-container p {
+  color: var(--ion-color-medium);
+  font-size: 16px;
+  margin: 0;
+}
+
+.reserva-card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.sala-title h2 {
+  margin: 0;
+  font-size: 1.2em;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+}
+
+.sala-title p {
+  margin: 4px 0 0 0;
+  color: var(--ion-color-medium);
+  font-size: 0.9em;
+}
+
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.info-item ion-icon {
+  font-size: 20px;
+  color: var(--ion-color-primary);
+  margin-top: 2px;
+  min-width: 20px;
+}
+
+.info-item div {
+  flex: 1;
+}
+
+.info-item strong {
+  display: block;
+  font-size: 0.9em;
+  color: var(--ion-color-dark);
+  margin-bottom: 2px;
+}
+
+.info-item p {
+  margin: 0;
+  color: var(--ion-color-medium);
+  line-height: 1.4;
+}
+
+.cancel-btn {
+  margin-top: 16px;
+}

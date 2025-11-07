@@ -29,6 +29,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/reservar/reservar.page').then(m => m.ReservarPage)
       },
       {
+        path: 'mis-reservas',
+        loadComponent: () => import('./pages/mis-reservas/mis-reservas.page').then(m => m.MisReservasPage)
+      },
+      {
         path: '',
         redirectTo: '/tabs/reservar',
         pathMatch: 'full'

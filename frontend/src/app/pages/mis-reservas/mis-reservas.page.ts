@@ -1,6 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonButton, IonIcon, IonChip, IonLabel, IonItem, IonList, IonRefresher, IonRefresherContent, IonFab, IonFabButton, AlertController, ToastController } from '@ionic/angular/standalone';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { ViewWillEnter } from '@ionic/angular';
+import { Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
+import { CommonModule, DatePipe } from '@angular/common';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCardSubtitle, IonButton, IonIcon, IonChip, IonLabel, IonFab, IonFabButton, IonSpinner, IonRippleEffect, AlertController, ToastController } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';import { locationOutline, businessOutline, calendarOutline, timeOutline, documentTextOutline, closeCircleOutline, checkmarkCircle, closeCircle, warning } from 'ionicons/icons';
+import { RouterLink } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
 import { AuthService } from '../../services/auth.service';
 import { EmailService } from '../../services/email.service';
@@ -9,49 +14,131 @@ import { ReservaCompleta } from '../../models/reserva.model';
 @Component({
   selector: 'app-mis-reservas',
   templateUrl: './mis-reservas.page.html',
+  styleUrls: ['./mis-reservas.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonButton, IonIcon, IonChip, IonLabel, IonItem, IonList, IonRefresher, IonRefresherContent, IonFab, IonFabButton]
+  imports: [CommonModule, DatePipe, RouterLink, IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCardSubtitle, IonButton, IonIcon, IonChip, IonLabel, IonFab, IonFabButton, IonSpinner, IonRippleEffect]
 })
-export class MisReservasPage implements OnInit {
+export class MisReservasPage implements OnInit, OnDestroy, ViewWillEnter {
   reservas: ReservaCompleta[] = [];
   cargando = false;
+  primeraCarga = true;
+  private userSubscription?: Subscription;
 
   constructor(
     private supabase: SupabaseService,
     private auth: AuthService,
     private email: EmailService,
     private alertController: AlertController,
-    private toastController: ToastController
-  ) {}
+    private toastController: ToastController,
+    private cdr: ChangeDetectorRef
+  ) {
+    addIcons({ locationOutline, businessOutline, calendarOutline, timeOutline, documentTextOutline, closeCircleOutline, checkmarkCircle, closeCircle, warning });
+  }
 
   async ngOnInit() {
-    await this.cargarReservas();
+    console.log('🚀 Inicializando página Mis Reservas');
+  }
+
+  ionViewWillEnter() {
+    console.log('🔄 Entrando a la vista Mis Reservas');
+    this.cargando = true;
+    this.primeraCarga = true;
+    this.cdr.detectChanges();
+    
+    this.cargarReservasConEspera();
+  }
+
+  private async cargarReservasConEspera() {
+    let intentos = 0;
+    const maxIntentos = 10;
+    
+    const verificarUsuario = async () => {
+      const usuario = this.auth.userProfile;
+      
+      if (usuario) {
+        console.log('✅ Usuario disponible, cargando reservas...');
+        await this.cargarReservas();
+      } else if (intentos < maxIntentos) {
+        intentos++;
+        console.log(`⏳ Intento ${intentos}/${maxIntentos} - Esperando usuario...`);
+        setTimeout(verificarUsuario, 200);
+      } else {
+        console.log('❌ No se pudo obtener el usuario después de varios intentos');
+        this.cargando = false;
+        this.primeraCarga = false;
+        this.cdr.detectChanges();
+      }
+    };
+    
+    verificarUsuario();
+  }
+
+  ngOnDestroy() {
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
+    }
   }
 
   async cargarReservas(event?: any) {
+    console.log('🔄 Iniciando carga de reservas...');
     this.cargando = true;
     
     try {
       const usuario = this.auth.userProfile;
-      if (!usuario) return;
+      console.log('👤 Usuario actual:', usuario);
+      
+      if (!usuario) {
+        console.log('❌ No hay usuario logueado');
+        return;
+      }
 
-      const { data, error } = await this.supabase.getReservasCompletas({
-        usuario_id: usuario.id
-      });
+      console.log('🔍 Buscando reservas para usuario ID:', usuario.id);
+      
+      const { data, error } = await this.supabase.supabase
+        .from('reservas')
+        .select(`
+          id,
+          fecha,
+          hora_inicio,
+          hora_fin,
+          proposito,
+          estado,
+          salas!inner(
+            nombre,
+            edificios!inner(
+              nombre
+            )
+          )
+        `)
+        .eq('usuario_id', usuario.id)
+        .order('fecha', { ascending: false })
+        .limit(50);
+      
+      console.log('📊 Respuesta de la base de datos:', { data, error });
       
       if (error) throw error;
       
-      this.reservas = (data || []).sort((a, b) => 
+      this.reservas = (data || []).map((reserva: any) => ({
+        ...reserva,
+        sala_nombre: reserva.salas?.nombre || 'Sala no encontrada',
+        edificio_nombre: reserva.salas?.edificios?.nombre || 'Edificio no encontrado'
+      })).sort((a, b) => 
         new Date(b.fecha + ' ' + b.hora_inicio).getTime() - 
         new Date(a.fecha + ' ' + a.hora_inicio).getTime()
       );
       
+      // Forzar detección de cambios
+      this.cdr.detectChanges();
+      
     } catch (error) {
-      console.error('Error cargando reservas:', error);
+      console.error('❌ Error cargando reservas:', error);
       this.mostrarError('Error cargando las reservas');
     } finally {
       this.cargando = false;
+      this.primeraCarga = false;
+      this.cdr.detectChanges();
       if (event) event.target.complete();
+      console.log('🏁 Carga de reservas finalizada');
     }
   }
 
@@ -72,15 +159,15 @@ export class MisReservasPage implements OnInit {
 
   private async confirmarCancelacion(reserva: ReservaCompleta) {
     try {
-      const { error } = await this.supabase.update('reservas', reserva.id, {
-        estado: 'cancelada',
-        updated_at: new Date().toISOString()
-      });
+      // Eliminar la reserva completamente en lugar de solo cambiar el estado
+      const { error } = await this.supabase.delete('reservas', reserva.id);
       
       if (error) throw error;
       
+      // Actualizar la lista localmente sin recargar desde la BD
+      this.reservas = this.reservas.filter(r => r.id !== reserva.id);
+      
       await this.email.enviarNotificacionReservaCancelada(reserva);
-      await this.cargarReservas();
       this.mostrarExito('Reserva cancelada exitosamente');
       
     } catch (error) {

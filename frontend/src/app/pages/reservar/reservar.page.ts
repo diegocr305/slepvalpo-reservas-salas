@@ -66,6 +66,7 @@ export class ReservarPage implements OnInit {
     console.log('=== INICIANDO CARGA ===');
     console.log('Fecha inicial:', this.fechaSeleccionada);
     console.log('Fecha mínima:', this.fechaMinima);
+    console.log('Usuario al iniciar:', this.supabaseService.user);
     
     this.cargando = true;
     
@@ -94,17 +95,25 @@ export class ReservarPage implements OnInit {
       this.reservasDelDia = data || [];
       console.log('Reservas del día:', this.reservasDelDia);
       this.calcularDisponibilidad();
+      
+      // Forzar detección de cambios
+      this.cdr.detectChanges();
     } catch (error) {
       console.error('Error cargando disponibilidad:', error);
       // Usar disponibilidad vacía si falla
       this.reservasDelDia = [];
       this.calcularDisponibilidad();
+      this.cdr.detectChanges();
     }
     
     console.log('Disponibilidad cargada');
   }
 
   calcularDisponibilidad() {
+    console.log('=== CALCULANDO DISPONIBILIDAD ===');
+    console.log('Usuario actual:', this.supabaseService.user?.id);
+    console.log('Reservas del día para calcular:', this.reservasDelDia);
+    
     this.disponibilidad = {};
     
     // Para cada sala, calcular disponibilidad por horario
@@ -115,19 +124,24 @@ export class ReservarPage implements OnInit {
       this.horarios.forEach((horario, index) => {
         const [horaInicio, horaFin] = horario.split('-');
         
-        // Buscar si hay reserva en este horario (agregar :00 para coincidir con formato de BD)
+        // Buscar si hay reserva CONFIRMADA en este horario (agregar :00 para coincidir con formato de BD)
         const reserva = this.reservasDelDia.find(r => 
           r.sala_id === sala.id && 
           r.hora_inicio === horaInicio + ':00' && 
-          r.hora_fin === horaFin + ':00'
+          r.hora_fin === horaFin + ':00' &&
+          r.estado === 'confirmada'
         );
+        
+        console.log(`Sala ${sala.id}, horario ${horario}: reserva encontrada:`, reserva);
         
         if (reserva) {
           // Si es mi reserva
           if (reserva.usuario_id === this.supabaseService.user?.id) {
             this.disponibilidad[key][index] = 'mi-reserva';
+            console.log(`Marcando como mi-reserva: sala ${sala.id}, horario ${horario}`);
           } else {
             this.disponibilidad[key][index] = 'ocupado';
+            console.log(`Marcando como ocupado: sala ${sala.id}, horario ${horario}`);
           }
         } else {
           this.disponibilidad[key][index] = 'disponible';
@@ -154,16 +168,52 @@ export class ReservarPage implements OnInit {
   async cargarSalas() {
     console.log('=== CARGANDO SALAS ===');
     
-    // Usar datos de respaldo directamente
-    this.todasLasSalas = [
-      { id: 1, nombre: 'Principal', edificio_id: 1, capacidad: 20 },
-      { id: 2, nombre: 'Guayaquil', edificio_id: 1, capacidad: 15 },
-      { id: 3, nombre: 'San Antonio', edificio_id: 1, capacidad: 12 },
-      { id: 4, nombre: 'Principal', edificio_id: 2, capacidad: 25 },
-      { id: 5, nombre: 'Secundaria', edificio_id: 2, capacidad: 10 }
-    ];
-    console.log('Todas las salas:', this.todasLasSalas);
-    this.filtrarSalasPorEdificio();
+    try {
+      console.log('Llamando a getSalas()...');
+      const { data, error } = await this.supabaseService.getSalas();
+      
+      console.log('Respuesta getSalas - data:', data);
+      console.log('Respuesta getSalas - error:', error);
+      
+      if (error) {
+        console.error('Error cargando salas:', error);
+        // Usar datos de respaldo si falla
+        this.todasLasSalas = [
+          { id: 1, nombre: 'Principal', edificio_id: 1, capacidad: 20 },
+          { id: 2, nombre: 'Guayaquil', edificio_id: 1, capacidad: 15 },
+          { id: 3, nombre: 'San Antonio', edificio_id: 1, capacidad: 12 },
+          { id: 4, nombre: 'Principal', edificio_id: 2, capacidad: 25 },
+          { id: 5, nombre: 'Secundaria', edificio_id: 2, capacidad: 10 }
+        ];
+        console.log('Usando datos de respaldo por error');
+      } else {
+        console.log('Datos recibidos de la BD:', data);
+        // Mapear datos de la BD al formato esperado
+        this.todasLasSalas = (data || []).map(sala => ({
+          id: sala.id,
+          nombre: sala.nombre,
+          edificio_id: sala.edificio_id,
+          capacidad: sala.capacidad
+        }));
+        console.log('Salas mapeadas:', this.todasLasSalas);
+      }
+      
+      console.log('Todas las salas:', this.todasLasSalas);
+      this.filtrarSalasPorEdificio();
+      
+    } catch (error) {
+      console.error('Error en cargarSalas:', error);
+      // Usar datos de respaldo
+      this.todasLasSalas = [
+        { id: 1, nombre: 'Principal', edificio_id: 1, capacidad: 20 },
+        { id: 2, nombre: 'Guayaquil', edificio_id: 1, capacidad: 15 },
+        { id: 3, nombre: 'San Antonio', edificio_id: 1, capacidad: 12 },
+        { id: 4, nombre: 'Principal', edificio_id: 2, capacidad: 25 },
+        { id: 5, nombre: 'Secundaria', edificio_id: 2, capacidad: 10 }
+      ];
+      console.log('Usando datos de respaldo por catch:', this.todasLasSalas);
+      this.filtrarSalasPorEdificio();
+    }
   }
 
   filtrarSalasPorEdificio() {
@@ -295,7 +345,19 @@ export class ReservarPage implements OnInit {
 
   getEstadoHorario(salaId: number, index: number): string {
     const key = `${this.edificioSeleccionado}-${salaId}`;
-    return this.disponibilidad[key]?.[index] || 'disponible';
+    const estado = this.disponibilidad[key]?.[index] || 'disponible';
+    
+    // Debug para el problema específico
+    if (salaId === 1 && this.horarios[index] === '09:00-10:00') {
+      console.log(`DEBUG - Sala Principal (ID: 1), horario 09:00-10:00:`);
+      console.log(`- Key: ${key}`);
+      console.log(`- Estado calculado: ${estado}`);
+      console.log(`- Disponibilidad completa para esta sala:`, this.disponibilidad[key]);
+      console.log(`- Usuario actual:`, this.supabaseService.user?.id);
+      console.log(`- Reservas del día:`, this.reservasDelDia.filter(r => r.sala_id === 1));
+    }
+    
+    return estado;
   }
 
   toggleHorario(horario: string, salaId: number, index: number) {
@@ -414,15 +476,21 @@ export class ReservarPage implements OnInit {
       console.log('Reserva creada exitosamente');
       alert(`✅ Reserva confirmada para ${this.getSalaNombre(this.salaSeleccionada)} el ${this.fechaFormateada}`);
       
-      // Recargar disponibilidad desde la base de datos
-      console.log('Recargando disponibilidad...');
-      await this.cargarDisponibilidad();
-      
-      // Limpiar formulario
+      // Limpiar formulario ANTES de recargar
       console.log('Limpiando formulario...');
       this.horariosSeleccionados = [];
       this.salaSeleccionada = null;
       this.proposito = '';
+      
+      // Recargar disponibilidad desde la base de datos
+      console.log('Recargando disponibilidad...');
+      await this.cargarDisponibilidad();
+      
+      // Forzar una segunda detección de cambios para asegurar la actualización visual
+      setTimeout(() => {
+        this.cdr.detectChanges();
+        console.log('Detección de cambios forzada después de crear reserva');
+      }, 100);
       
     } catch (error) {
       console.error('Error en catch general:', error);
@@ -448,6 +516,29 @@ export class ReservarPage implements OnInit {
         console.log('Error cerrando sesión:', error);
       }
     }, 100);
+  }
+
+  // Función para refrescar manualmente (debug)
+  async refrescarDisponibilidad() {
+    console.log('=== REFRESCANDO DISPONIBILIDAD MANUALMENTE ===');
+    this.cargando = true;
+    
+    try {
+      // Limpiar datos actuales
+      this.reservasDelDia = [];
+      this.disponibilidad = {};
+      
+      // Recargar todo
+      await this.cargarDisponibilidad();
+      
+      console.log('Disponibilidad refrescada manualmente');
+      alert('Disponibilidad actualizada');
+    } catch (error) {
+      console.error('Error refrescando:', error);
+      alert('Error al refrescar');
+    } finally {
+      this.cargando = false;
+    }
   }
 
   mostrarOpcionesCancelacion(horario: string, salaId: number) {
@@ -512,6 +603,12 @@ export class ReservarPage implements OnInit {
       
       // Recargar disponibilidad
       await this.cargarDisponibilidad();
+      
+      // Forzar actualización visual
+      setTimeout(() => {
+        this.cdr.detectChanges();
+        console.log('Detección de cambios forzada después de cancelar reserva');
+      }, 100);
       
     } catch (error) {
       console.error('Error:', error);

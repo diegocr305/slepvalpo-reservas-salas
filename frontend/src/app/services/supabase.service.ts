@@ -204,6 +204,10 @@ export class SupabaseService {
 
   // Obtener reservas por fecha y sala
   async getReservasPorFechaYSala(fecha: string, salaId?: number) {
+    console.log(`=== CONSULTANDO RESERVAS ===`);
+    console.log(`Fecha: ${fecha}`);
+    console.log(`Sala ID: ${salaId || 'todas'}`);
+    
     let query = this.supabase
       .from('reservas')
       .select('*')
@@ -214,7 +218,12 @@ export class SupabaseService {
       query = query.eq('sala_id', salaId);
     }
     
-    return await query.order('hora_inicio');
+    const result = await query.order('hora_inicio');
+    
+    console.log('Resultado de la consulta de reservas:', result);
+    console.log('Reservas encontradas:', result.data?.length || 0);
+    
+    return result;
   }
 
   // Eliminar reserva
