@@ -31,6 +31,7 @@ interface ReservaCompleta {
   usuario_nombre: string;
   usuario_area: string;
   usuario_id: string;
+  responsable_nombre?: string;
 }
 
 @Component({
@@ -135,7 +136,8 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
           edificio_nombre: reserva.edificio_nombre,
           usuario_nombre: reserva.usuario_nombre,
           usuario_area: reserva.usuario_area || 'Área no especificada',
-          usuario_id: reserva.usuario_id
+          usuario_id: reserva.usuario_id,
+          responsable_nombre: reserva.responsable_nombre
         }));
 
         // Agrupar reservas consecutivas para funcionarios también
@@ -162,7 +164,7 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
               nombre,
               edificios!inner(nombre)
             ),
-            usuarios!inner(
+            usuarios!reservas_usuario_id_fkey(
               nombre_completo,
               area
             )
@@ -188,7 +190,7 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
               nombre,
               edificios!inner(nombre)
             ),
-            usuarios!inner(
+            usuarios!reservas_usuario_id_fkey(
               nombre_completo,
               area
             )
@@ -220,7 +222,8 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
         edificio_nombre: reserva.salas?.edificios?.nombre || 'Edificio no encontrado',
         usuario_nombre: reserva.usuarios?.nombre_completo || 'Usuario no encontrado',
         usuario_area: reserva.usuarios?.area || 'Área no especificada',
-        usuario_id: reserva.usuario_id
+        usuario_id: reserva.usuario_id,
+        responsable_nombre: reserva.responsable_nombre
       }));
 
       // Agrupar reservas consecutivas ANTES de contar
@@ -398,45 +401,25 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
    * Elimina un chip de bloque (elimina el bloque de la reserva)
    */
   async eliminarChipBloque(bloque: any) {
-    await this.eliminarBloqueIndividual(bloque.id, bloque.horario);
+    console.log('🗑️ Iniciando eliminación de chip:', bloque);
     
-    // Remover el bloque de la lista local
-    this.bloquesParaEditar = this.bloquesParaEditar.filter(b => b.id !== bloque.id);
-    
-    // Si no quedan bloques, cerrar edición
-    if (this.bloquesParaEditar.length === 0) {
-      this.cerrarEdicion();
-    }
-  }
-
-  /**
-   * Elimina un bloque individual de una reserva agrupada
-   */
-  private async eliminarBloqueIndividual(reservaId: string, horario: string) {
+    // Mostrar alert de confirmación ANTES de eliminar
     const alert = await this.alertController.create({
       header: 'Eliminar bloque',
-      message: `¿Estás seguro de eliminar el bloque ${horario}?`,
+      message: `¿Estás seguro de eliminar el bloque ${bloque.horario}?`,
       buttons: [
-        { text: 'No', role: 'cancel' },
+        { 
+          text: 'No', 
+          role: 'cancel',
+          handler: () => {
+            console.log('❌ Eliminación cancelada');
+          }
+        },
         {
           text: 'Sí, eliminar',
           handler: async () => {
-            try {
-              console.log('🗑️ Eliminando bloque individual:', reservaId);
-              
-              const { error } = await this.supabaseService.eliminarReserva(reservaId);
-              
-              if (error) throw error;
-              
-              this.mostrarExito(`Bloque ${horario} eliminado exitosamente`);
-              
-              // Recargar reservas para actualizar la agrupación
-              await this.cargarReservas();
-              
-            } catch (error) {
-              console.error('Error eliminando bloque:', error);
-              this.mostrarError('Error al eliminar el bloque');
-            }
+            console.log('✅ Confirmando eliminación del bloque');
+            await this.procesarEliminacionBloque(bloque);
           }
         }
       ]
@@ -444,6 +427,38 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
     
     await alert.present();
   }
+  
+  /**
+   * Procesa la eliminación del bloque después de confirmar
+   */
+  private async procesarEliminacionBloque(bloque: any) {
+    try {
+      console.log('🔄 Eliminando bloque de la BD:', bloque.id);
+      
+      const { error } = await this.supabaseService.eliminarReserva(bloque.id);
+      
+      if (error) throw error;
+      
+      this.mostrarExito(`Bloque ${bloque.horario} eliminado exitosamente`);
+      
+      // Remover el bloque de la lista local
+      this.bloquesParaEditar = this.bloquesParaEditar.filter(b => b.id !== bloque.id);
+      
+      // Si no quedan bloques, cerrar edición
+      if (this.bloquesParaEditar.length === 0) {
+        this.cerrarEdicion();
+      }
+      
+      // Recargar reservas para actualizar la vista
+      await this.cargarReservas();
+      
+    } catch (error) {
+      console.error('❌ Error eliminando bloque:', error);
+      this.mostrarError('Error al eliminar el bloque');
+    }
+  }
+
+
 
   /**
    * Cancela una reserva (solo admin/subdirector)

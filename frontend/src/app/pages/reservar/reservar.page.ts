@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonButton, IonButtons, IonItem, IonLabel, IonTextarea, IonSegment, IonSegmentButton, IonIcon, IonModal, IonDatetime, IonSpinner, IonFab, IonFabButton, IonGrid, IonRow, IonCol, IonAlert, AlertController } from '@ionic/angular/standalone';
@@ -6,15 +6,18 @@ import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { ResponsableSearchComponent } from '../../components/responsable-search/responsable-search.component';
 
 @Component({
   selector: 'app-reservar',
   templateUrl: './reservar.page.html',
   styleUrls: ['./reservar.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonButton, IonButtons, IonItem, IonLabel, IonTextarea, IonSegment, IonSegmentButton, IonIcon, IonModal, IonDatetime, IonSpinner, IonFab, IonFabButton, IonGrid, IonRow, IonCol, IonAlert]
+  imports: [CommonModule, FormsModule, IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonButton, IonButtons, IonItem, IonLabel, IonTextarea, IonSegment, IonSegmentButton, IonIcon, IonModal, IonDatetime, IonSpinner, IonFab, IonFabButton, IonGrid, IonRow, IonCol, IonAlert, ResponsableSearchComponent]
 })
 export class ReservarPage implements OnInit, ViewWillEnter {
+  @ViewChild(ResponsableSearchComponent) responsableSearch!: ResponsableSearchComponent;
+  
   fechaSeleccionada: string = new Date().toISOString();
   fechaMinima = new Date().toISOString();
   
@@ -43,6 +46,7 @@ export class ReservarPage implements OnInit, ViewWillEnter {
   salaSeleccionada: number | null = null;
   horariosSeleccionados: string[] = [];
   proposito = '';
+  responsableSeleccionado: any = null;
   mostrarCalendario = false;
   cargando = false;
 
@@ -292,14 +296,11 @@ export class ReservarPage implements OnInit, ViewWillEnter {
   }
 
   get puedeConfirmar(): boolean {
-    const resultado = this.proposito.trim().length === 0;
+    const resultado = this.proposito.trim().length === 0 || !this.responsableSeleccionado;
     console.log('=== PUEDE CONFIRMAR ===');
     console.log('Propósito actual:', `"${this.proposito}"`);
-    console.log('Propósito trimmed:', `"${this.proposito.trim()}"`);
-    console.log('Length:', this.proposito.trim().length);
+    console.log('Responsable seleccionado:', this.responsableSeleccionado);
     console.log('puedeConfirmar (botón deshabilitado?):', resultado);
-    console.log('Sala seleccionada:', this.salaSeleccionada);
-    console.log('Horarios seleccionados:', this.horariosSeleccionados);
     console.log('=== FIN PUEDE CONFIRMAR ===');
     return resultado;
   }
@@ -401,6 +402,14 @@ export class ReservarPage implements OnInit, ViewWillEnter {
     this.horariosSeleccionados = [];
   }
 
+  onResponsableSelected(usuario: any) {
+    console.log('=== EVENTO RESPONSABLE RECIBIDO ===');
+    console.log('Usuario recibido:', usuario);
+    this.responsableSeleccionado = usuario;
+    console.log('responsableSeleccionado asignado:', this.responsableSeleccionado);
+    this.cdr.detectChanges();
+  }
+
   getEstadoHorario(salaId: number, index: number): string {
     const key = `${this.edificioSeleccionado}-${salaId}`;
     const estado = this.disponibilidad[key]?.[index] || 'disponible';
@@ -500,7 +509,7 @@ export class ReservarPage implements OnInit, ViewWillEnter {
   }
 
   confirmarReserva() {
-    if (!this.salaSeleccionada || this.horariosSeleccionados.length === 0 || !this.proposito.trim()) {
+    if (!this.salaSeleccionada || this.horariosSeleccionados.length === 0 || !this.proposito.trim() || !this.responsableSeleccionado) {
       const alertElement = document.getElementById('error-alert');
       if (alertElement) {
         (alertElement as any).present();
@@ -536,7 +545,8 @@ export class ReservarPage implements OnInit, ViewWillEnter {
           hora_fin: horaFin,
           sala_id: this.salaSeleccionada,
           usuario_id: this.supabaseService.user!.id,
-          proposito: this.proposito
+          proposito: this.proposito,
+          responsable_id: this.responsableSeleccionado?.id
         };
         
         const { data, error } = await this.supabaseService.crearReserva(reservaData);
@@ -563,6 +573,12 @@ export class ReservarPage implements OnInit, ViewWillEnter {
       this.horariosSeleccionados = [];
       this.salaSeleccionada = null;
       this.proposito = '';
+      this.responsableSeleccionado = null;
+      
+      // Limpiar componente de búsqueda
+      if (this.responsableSearch) {
+        this.responsableSearch.clearSelection();
+      }
       
       // Forzar limpieza del estado
       this.reservasDelDia = [];
@@ -699,14 +715,26 @@ export class ReservarPage implements OnInit, ViewWillEnter {
       console.log('Reserva cancelada exitosamente');
       alert('✅ Reserva cancelada exitosamente');
       
+      // Esperar un momento antes de recargar para evitar problemas de cache
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Limpiar cache y recargar
+      this.reservasDelDia = [];
+      this.disponibilidad = {};
+      
       // Recargar disponibilidad
       await this.cargarDisponibilidad();
       
-      // Forzar actualización visual
+      // Forzar múltiples actualizaciones visuales
+      this.cdr.detectChanges();
       setTimeout(() => {
         this.cdr.detectChanges();
-        console.log('Detección de cambios forzada después de cancelar reserva');
+        console.log('Primera detección de cambios forzada');
       }, 100);
+      setTimeout(() => {
+        this.cdr.detectChanges();
+        console.log('Segunda detección de cambios forzada');
+      }, 300);
       
     } catch (error) {
       console.error('Error:', error);

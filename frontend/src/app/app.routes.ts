@@ -29,12 +29,16 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/reservar/reservar.page').then(m => m.ReservarPage)
       },
       {
+        path: 'reservas-dia',
+        loadComponent: () => import('./pages/reservas-dia/reservas-dia.page').then(m => m.ReservasDiaPage)
+      },
+      {
         path: 'mis-reservas',
         loadComponent: () => import('./pages/mis-reservas/mis-reservas.page').then(m => m.MisReservasPage)
       },
       {
         path: '',
-        redirectTo: '/tabs/reservar',
+        redirectTo: '/tabs/reservas-dia',
         pathMatch: 'full'
       }
     ]

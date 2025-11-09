@@ -76,9 +76,8 @@
 
       <ion-card-content>
         <div class="reserva-info">
-          <p><strong>{{ reserva.usuario_nombre }}</strong></p>
-          <p *ngIf="reserva.usuario_area" class="area">{{ reserva.usuario_area }}</p>
-          <p *ngIf="reserva.proposito" class="proposito">{{ reserva.proposito }}</p>
+          <p *ngIf="reserva.responsable_nombre" class="responsable">Responsable: {{ reserva.responsable_nombre }}</p>
+          <p *ngIf="reserva.proposito" class="proposito">Motivo: {{ reserva.proposito }}</p>
         </div>
 
         <div class="reserva-badges">
@@ -212,6 +211,15 @@
 .reserva-card-compacta {
   margin: 0;
   min-height: 180px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-left: 4px solid var(--ion-color-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.reserva-card-compacta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .reserva-card-compacta ion-card-header {
@@ -242,9 +250,19 @@
   font-size: 0.8rem;
 }
 
+.reserva-info .responsable {
+  color: var(--ion-color-primary);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
 .reserva-info .proposito {
   font-style: italic;
   color: var(--ion-color-dark);
+  background: rgba(var(--ion-color-primary-rgb), 0.1);
+  padding: 8px;
+  border-radius: 6px;
+  margin-top: 8px;
 }
 
 .reserva-badges {

@@ -6,16 +6,16 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content class="ion-no-padding">
   <div class="login-container">
     <ion-card>
       <ion-card-content class="ion-text-center">
+        <h1 class="main-title">Sistema de Reservas</h1>
+        <h2 class="subtitle">Reserva Salas y Espacios Abiertos</h2>
+        
         <img src="assets/images/E01-Valparaíso-01.png" alt="SLEP Valparaíso" class="logo" />
         
-        <h1>Sistema de Reservas</h1>
-        <h2>Salas de Reunión</h2>
-        
-        <p>Inicia sesión con tu cuenta institucional</p>
+        <p class="description">Inicia sesión con tu cuenta institucional</p>
         
         <button 
           class="gsi-material-button"
@@ -49,25 +49,63 @@
 .login-container {
   display: flex;
   justify-content: center;
-  align-items: center;
-  min-height: 80vh;
+  align-items: flex-start;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1565C0 0%, #2291F2 100%);
+  padding: 70px 20px 20px;
+  margin: 0;
+}
+
+.login-container ion-card {
+  max-width: 400px;
+  width: 100%;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.login-container ion-card-content {
+  padding: 30px 24px;
 }
 
 .logo {
-  max-width: 300px;
+  max-width: 280px;
   height: auto;
-  margin: 20px auto;
+  margin: 10px auto 10px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+  transition: transform 0.3s ease;
 }
 
-h1 {
+.logo:hover {
+  transform: scale(1.05);
+}
+
+.main-title {
   color: #1976d2;
-  margin: 20px 0 10px 0;
+  margin: 0 0 8px 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: linear-gradient(45deg, #1976d2, #42a5f5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.5px;
 }
 
-h2 {
-  color: #666;
-  font-weight: normal;
-  margin: 0 0 30px 0;
+.subtitle {
+  color: #4a5568;
+  font-weight: 500;
+  margin: 0 0 25px 0;
+  font-size: 1.2rem;
+  letter-spacing: 0.3px;
+}
+
+.description {
+  color: #718096;
+  font-size: 0.95rem;
+  margin: 15px 0 25px 0;
+  font-weight: 400;
 }
 
 /* Estilos oficiales de Google */
@@ -76,33 +114,35 @@ h2 {
   -webkit-user-select: none;
   -ms-user-select: none;
   -webkit-appearance: none;
-  background-color: WHITE;
+  background: #ffffff;
   background-image: none;
-  border: 1px solid #747775;
-  -webkit-border-radius: 20px;
-  border-radius: 20px;
+  border: 2px solid #dadce0;
+  -webkit-border-radius: 25px;
+  border-radius: 25px;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #1f1f1f;
+  color: #3c4043;
   cursor: pointer;
   font-family: 'Roboto', arial, sans-serif;
-  font-size: 14px;
-  height: 40px;
+  font-size: 16px;
+  font-weight: 500;
+  height: 50px;
   letter-spacing: 0.25px;
   outline: none;
   overflow: hidden;
-  padding: 0 12px;
+  padding: 0 24px;
   position: relative;
   text-align: center;
-  -webkit-transition: background-color .218s, border-color .218s, box-shadow .218s;
-  transition: background-color .218s, border-color .218s, box-shadow .218s;
+  -webkit-transition: all .3s ease;
+  transition: all .3s ease;
   vertical-align: middle;
   white-space: nowrap;
   width: 100%;
-  max-width: 400px;
+  max-width: 350px;
   min-width: min-content;
-  margin: 30px auto;
+  margin: 20px auto;
   display: block;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .gsi-material-button .gsi-material-button-icon {
@@ -168,13 +208,21 @@ h2 {
 }
 
 .gsi-material-button:not(:disabled):hover {
-  -webkit-box-shadow: 0 1px 2px 0 rgba(60, 64, 67, .30), 0 1px 3px 1px rgba(60, 64, 67, .15);
-  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, .30), 0 1px 3px 1px rgba(60, 64, 67, .15);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(66, 133, 244, 0.4);
+  background: linear-gradient(45deg, #4285f4, #34a853);
+  color: white;
+  border-color: transparent;
+}
+
+.gsi-material-button:not(:disabled):active {
+  transform: translateY(0);
+  box-shadow: 0 6px 15px rgba(66, 133, 244, 0.3);
 }
 
 .gsi-material-button:not(:disabled):hover .gsi-material-button-state {
-  background-color: #303030;
-  opacity: 8%;
+  background-color: rgba(255, 255, 255, 0.1);
+  opacity: 100%;
 }
 
 .loading-spinner {

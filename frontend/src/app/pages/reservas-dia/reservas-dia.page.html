@@ -1,0 +1,280 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      {{ modoSoloLectura ? 'Reservas del Día' : 'Gestión Diaria' }}
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Refresher para actualizar -->
+  <ion-refresher slot="fixed" (ionRefresh)="cargarReservas($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Navegación de fechas -->
+  <ion-card>
+    <ion-card-content>
+      <div class="fecha-navegacion">
+        <ion-button 
+          fill="clear" 
+          (click)="changeDay('prev')"
+          [disabled]="cargando">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </ion-button>
+        
+        <div class="fecha-info">
+          <h2>{{ fechaFormateada }}</h2>
+          <p *ngIf="!cargando">{{ totalReservas }} reserva(s) encontrada(s)</p>
+        </div>
+        
+        <ion-button 
+          fill="clear" 
+          (click)="changeDay('next')"
+          [disabled]="cargando">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Indicador de modo -->
+  <ion-card *ngIf="modoSoloLectura" color="warning">
+    <ion-card-content>
+      <div class="modo-info">
+        <ion-icon name="eye-outline"></ion-icon>
+        <div>
+          <strong>Modo Solo Lectura</strong>
+          <p>Como funcionario, puedes ver todas las reservas pero no editarlas.</p>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Loading -->
+  <div *ngIf="cargando" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando reservas...</p>
+  </div>
+
+  <!-- Sin reservas -->
+  <ion-card *ngIf="!cargando && reservas.length === 0">
+    <ion-card-content class="sin-reservas">
+      <ion-icon name="calendar-outline" size="large" color="medium"></ion-icon>
+      <h3>No hay reservas</h3>
+      <p>No se encontraron reservas para esta fecha</p>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Acordeones agrupados por sala -->
+  <ion-accordion-group *ngIf="!cargando && reservas.length > 0" [multiple]="true">
+    <ion-accordion *ngFor="let sala of salasConReservas" [value]="sala">
+      <ion-item slot="header" color="light">
+        <ion-icon name="business-outline" slot="start"></ion-icon>
+        <ion-label>
+          <h3>{{ sala }}</h3>
+          <p>{{ getReservasPorSala(sala) }} reserva(s)</p>
+        </ion-label>
+      </ion-item>
+      
+      <div slot="content" class="accordion-content">
+        <div class="reservas-grid">
+          <ion-card *ngFor="let reserva of reservasPorSala[sala]" class="reserva-card-compacta">
+            <ion-card-header>
+              <ion-card-title>{{ reserva.hora_inicio }} - {{ reserva.hora_fin }}</ion-card-title>
+              <ion-card-subtitle>Reservado por: {{ reserva.usuario_nombre }}</ion-card-subtitle>
+            </ion-card-header>
+
+            <ion-card-content>
+              <div class="reserva-info">
+                <p *ngIf="reserva.responsable_nombre" class="responsable">Responsable: {{ reserva.responsable_nombre }}</p>
+                <p *ngIf="reserva.proposito" class="proposito">Motivo: {{ reserva.proposito }}</p>
+              </div>
+
+              <div class="reserva-badges">
+                <ion-chip *ngIf="esMiReserva(reserva)" color="primary" size="small">
+                  <ion-label>Mi Reserva</ion-label>
+                </ion-chip>
+                
+                <ion-chip *ngIf="modoSoloLectura" color="medium" size="small" fill="outline">
+                  <ion-label>Solo lectura</ion-label>
+                </ion-chip>
+              </div>
+
+              <div class="acciones-compactas" *ngIf="!modoSoloLectura">
+                <ion-button 
+                  *ngIf="puedeCancelarReserva(reserva)"
+                  fill="clear" 
+                  size="small"
+                  color="danger"
+                  (click)="cancelarReserva(reserva)">
+                  <ion-icon name="trash-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
+</ion-content>
+
+<style>
+.fecha-navegacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+}
+
+.fecha-info {
+  text-align: center;
+  flex: 1;
+}
+
+.fecha-info h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.fecha-info p {
+  margin: 4px 0 0 0;
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+}
+
+.sin-reservas {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.sin-reservas ion-icon {
+  margin-bottom: 16px;
+}
+
+.sin-reservas h3 {
+  margin: 16px 0 8px 0;
+  color: var(--ion-color-medium);
+}
+
+.reservas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.reserva-card-compacta {
+  margin: 0;
+  min-height: 180px;
+}
+
+.reserva-card-compacta ion-card-header {
+  padding-bottom: 8px;
+}
+
+.reserva-card-compacta ion-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.reserva-card-compacta ion-card-subtitle {
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+.reserva-info {
+  margin-bottom: 12px;
+}
+
+.reserva-info p {
+  margin: 4px 0;
+  font-size: 0.9rem;
+}
+
+.reserva-info .area {
+  color: var(--ion-color-medium);
+  font-size: 0.8rem;
+}
+
+.reserva-info .responsable {
+  color: var(--ion-color-primary);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.reserva-info .proposito {
+  font-style: italic;
+  color: var(--ion-color-dark);
+}
+
+.reserva-badges {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.acciones-compactas {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.accordion-content {
+  padding: 16px;
+  background: var(--ion-color-light);
+}
+
+.accordion-content .reservas-grid {
+  gap: 8px;
+}
+
+.accordion-content .reserva-card-compacta {
+  min-height: 120px;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .reservas-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .accordion-content {
+    padding: 12px;
+  }
+}
+
+.modo-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modo-info ion-icon {
+  font-size: 24px;
+  color: var(--ion-color-warning);
+}
+
+.modo-info div strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.modo-info div p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+</style>

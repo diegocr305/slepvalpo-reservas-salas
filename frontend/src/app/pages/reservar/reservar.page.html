@@ -1,7 +1,9 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <img src="assets/images/E01-Valparaíso-01.png" alt="SLEP Valparaíso" slot="start" class="header-logo" />
-    <ion-title>Reservar Sala</ion-title>
+    <div class="header-content">
+      <img src="assets/images/E01-Valparaíso-01.png" alt="SLEP Valparaíso" class="header-logo" />
+      <ion-title class="header-title">Reservar Sala</ion-title>
+    </div>
   </ion-toolbar>
 </ion-header>
 
@@ -71,7 +73,7 @@
 
   <!-- Selector de edificio -->
   <div class="edificio-selector">
-    <ion-segment [(ngModel)]="edificioSeleccionado" (ionChange)="onEdificioChange()">
+    <ion-segment color="primary" [(ngModel)]="edificioSeleccionado" (ionChange)="onEdificioChange()">
       <ion-segment-button *ngFor="let edificio of edificios" [value]="edificio.id">
         <ion-label>Edificio {{edificio.nombre}}</ion-label>
       </ion-segment-button>
@@ -167,6 +169,14 @@
         </ion-textarea>
       </ion-item>
 
+      <ion-item>
+        <ion-label position="stacked">Responsable de la Reserva *</ion-label>
+        <app-responsable-search 
+          [selectedResponsable]="responsableSeleccionado"
+          (responsableSelected)="onResponsableSelected($event)">
+        </app-responsable-search>
+      </ion-item>
+
       <ion-button 
         expand="block" 
         size="large"
@@ -209,7 +219,7 @@
     id="error-alert"
     class="custom-alert"
     header="Campos incompletos"
-    message="Por favor completa todos los campos"
+    message="Por favor completa todos los campos: propósito y responsable son obligatorios"
     [buttons]="[{text: 'Aceptar', role: 'cancel'}]">
   </ion-alert>
 

@@ -4,7 +4,7 @@ import { IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel, IonHeader, IonTool
 import { SupabaseService } from '../../services/supabase.service';
 import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
-import { addCircleOutline, listOutline, logOutOutline, personCircleOutline } from 'ionicons/icons';
+import { addCircleOutline, listOutline, logOutOutline, personCircleOutline, calendarOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-tabs',
@@ -42,7 +42,12 @@ import { addCircleOutline, listOutline, logOutOutline, personCircleOutline } fro
           <ion-label>Reservar</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="mis-reservas">
+        <ion-tab-button tab="reservas-dia">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <ion-label>Reservas del Día</ion-label>
+        </ion-tab-button>
+
+        <ion-tab-button tab="mis-reservas" *ngIf="!esFuncionario()">
           <ion-icon name="list-outline"></ion-icon>
           <ion-label>Mis Reservas</ion-label>
         </ion-tab-button>
@@ -61,7 +66,7 @@ export class TabsComponent implements OnInit {
     private supabaseService: SupabaseService,
     private router: Router
   ) {
-    addIcons({ addCircleOutline, listOutline, logOutOutline, personCircleOutline });
+    addIcons({ addCircleOutline, listOutline, logOutOutline, personCircleOutline, calendarOutline });
   }
 
   async ngOnInit() {
@@ -91,5 +96,13 @@ export class TabsComponent implements OnInit {
   async logout() {
     await this.supabaseService.signOut();
     this.router.navigate(['/login']);
+  }
+
+  /**
+   * Verifica si el usuario es funcionario
+   * Los funcionarios solo ven "Reservas del Día", no "Mis Reservas"
+   */
+  esFuncionario(): boolean {
+    return this.usuario?.rol === 'funcionario';
   }
 }

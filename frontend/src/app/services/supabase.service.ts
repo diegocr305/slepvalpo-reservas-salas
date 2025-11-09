@@ -186,6 +186,7 @@ export class SupabaseService {
         sala_id: reservaData.sala_id,
         usuario_id: reservaData.usuario_id,
         proposito: reservaData.proposito,
+        responsable_id: reservaData.responsable_id,
         estado: 'confirmada'
       })
       .select();
