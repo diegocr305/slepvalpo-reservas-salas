@@ -161,6 +161,7 @@
         <ion-label position="stacked">Propósito de la Reunión</ion-label>
         <ion-textarea 
           [(ngModel)]="proposito"
+          (ionInput)="onPropositoChange()"
           placeholder="Describe brevemente el propósito de la reunión"
           rows="3">
         </ion-textarea>

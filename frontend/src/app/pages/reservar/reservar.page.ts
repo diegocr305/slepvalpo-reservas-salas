@@ -292,7 +292,16 @@ export class ReservarPage implements OnInit, ViewWillEnter {
   }
 
   get puedeConfirmar(): boolean {
-    return !this.proposito.trim();
+    const resultado = this.proposito.trim().length === 0;
+    console.log('=== PUEDE CONFIRMAR ===');
+    console.log('Propósito actual:', `"${this.proposito}"`);
+    console.log('Propósito trimmed:', `"${this.proposito.trim()}"`);
+    console.log('Length:', this.proposito.trim().length);
+    console.log('puedeConfirmar (botón deshabilitado?):', resultado);
+    console.log('Sala seleccionada:', this.salaSeleccionada);
+    console.log('Horarios seleccionados:', this.horariosSeleccionados);
+    console.log('=== FIN PUEDE CONFIRMAR ===');
+    return resultado;
   }
 
   get fechaFormateada(): string {
@@ -483,6 +492,11 @@ export class ReservarPage implements OnInit, ViewWillEnter {
   getSalaNombre(salaId: number): string {
     const sala = this.salas.find((s: any) => s.id === salaId);
     return sala ? sala.nombre : '';
+  }
+
+  onPropositoChange() {
+    console.log('📝 Propósito cambiado:', this.proposito);
+    this.cdr.detectChanges();
   }
 
   confirmarReserva() {
