@@ -501,22 +501,7 @@ export class ReservarPage implements OnInit {
     }
   }
 
-  cerrarSesion() {
-    console.log('=== CERRAR SESIÓN ===');
-    
-    // Redireccionar inmediatamente
-    this.router.navigate(['/login']);
-    
-    // Intentar cerrar sesión en segundo plano
-    setTimeout(async () => {
-      try {
-        await this.supabaseService.signOut();
-        console.log('Sesión cerrada');
-      } catch (error) {
-        console.log('Error cerrando sesión:', error);
-      }
-    }, 100);
-  }
+
 
   // Función para refrescar manualmente (debug)
   async refrescarDisponibilidad() {

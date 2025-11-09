@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel, IonHeader, IonToolbar, IonTitle, IonButton } from '@ionic/angular/standalone';
+import { IonTabs, IonTabBar, IonIcon, IonLabel, IonHeader, IonToolbar, IonButton, IonFab, IonFabButton } from '@ionic/angular/standalone';
 import { SupabaseService } from '../../services/supabase.service';
 
 @Component({
@@ -8,10 +8,10 @@ import { SupabaseService } from '../../services/supabase.service';
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-title>SLEP Valparaíso - Reservas</ion-title>
-        <ion-button slot="end" fill="clear" (click)="logout()">
-          <ion-icon name="log-out-outline"></ion-icon>
-        </ion-button>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <img src="assets/images/E01-Valparaíso-01.png" alt="Logo" style="height: 56px;" />
+          <span style="font-size: 18px; font-weight: bold; color: #1976d2;">Reservas</span>
+        </div>
       </ion-toolbar>
     </ion-header>
     
@@ -26,11 +26,16 @@ import { SupabaseService } from '../../services/supabase.service';
           <ion-icon name="list-outline"></ion-icon>
           <ion-label>Mis Reservas</ion-label>
         </ion-tab-button>
+        
+        <ion-tab-button (click)="logout()">
+          <ion-icon name="log-out-outline"></ion-icon>
+          <ion-label>Salir</ion-label>
+        </ion-tab-button>
       </ion-tab-bar>
     </ion-tabs>
   `,
   standalone: true,
-  imports: [IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel, IonHeader, IonToolbar, IonTitle, IonButton]
+  imports: [IonTabs, IonTabBar, IonIcon, IonLabel, IonHeader, IonToolbar, IonButton, IonFab, IonFabButton]
 })
 export class TabsComponent {
   constructor(
