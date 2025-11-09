@@ -21,8 +21,8 @@
   margin-bottom: 20px;
   
   h1 {
-    font-size: 2.4em;
-    font-weight: 700;
+    font-size: 1.4em;
+    font-weight: 600;
     color: #3880ff;
     margin: 0;
     text-transform: capitalize;
@@ -295,7 +295,7 @@ ion-modal {
 // Responsive
 @media (max-width: 1200px) {
   .fecha-navegacion h1 {
-    font-size: 2em;
+    font-size: 1.3em;
   }
 }
 
@@ -309,7 +309,7 @@ ion-modal {
     margin-bottom: 16px;
     
     h1 {
-      font-size: 1.8em;
+      font-size: 1.2em;
     }
   }
   
@@ -348,7 +348,7 @@ ion-modal {
     gap: 10px;
     
     h1 {
-      font-size: 1.5em;
+      font-size: 1.1em;
     }
   }
   
@@ -357,6 +357,37 @@ ion-modal {
     height: 35px;
     font-size: 18px;
   }
-  
+}
 
+// Estilos para el alert personalizado
+ion-alert.custom-alert {
+  --backdrop-opacity: 0.7;
+}
+
+.custom-alert .alert-button-group {
+  padding: 8px;
+}
+
+button.alert-button.alert-button-confirm {
+  background-color: var(--ion-color-danger);
+  color: var(--ion-color-danger-contrast);
+}
+
+.md button.alert-button.alert-button-confirm {
+  border-radius: 4px;
+}
+
+.ios .custom-alert button.alert-button {
+  border: 0.55px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.2);
+}
+
+.ios button.alert-button.alert-button-cancel {
+  border-right: 0;
+  border-bottom-left-radius: 13px;
+  border-top-left-radius: 13px;
+}
+
+.ios button.alert-button.alert-button-confirm {
+  border-bottom-right-radius: 13px;
+  border-top-right-radius: 13px;
 }

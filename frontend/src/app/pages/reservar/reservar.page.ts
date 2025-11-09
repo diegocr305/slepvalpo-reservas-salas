@@ -1,8 +1,10 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonButton, IonButtons, IonItem, IonLabel, IonTextarea, IonSegment, IonSegmentButton, IonIcon, IonModal, IonDatetime, IonSpinner, IonFab, IonFabButton, IonGrid, IonRow, IonCol } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonButton, IonButtons, IonItem, IonLabel, IonTextarea, IonSegment, IonSegmentButton, IonIcon, IonModal, IonDatetime, IonSpinner, IonFab, IonFabButton, IonGrid, IonRow, IonCol, IonAlert, AlertController } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
+import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -10,9 +12,9 @@ import { Router } from '@angular/router';
   templateUrl: './reservar.page.html',
   styleUrls: ['./reservar.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonButton, IonButtons, IonItem, IonLabel, IonTextarea, IonSegment, IonSegmentButton, IonIcon, IonModal, IonDatetime, IonSpinner, IonFab, IonFabButton, IonGrid, IonRow, IonCol]
+  imports: [CommonModule, FormsModule, IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonButton, IonButtons, IonItem, IonLabel, IonTextarea, IonSegment, IonSegmentButton, IonIcon, IonModal, IonDatetime, IonSpinner, IonFab, IonFabButton, IonGrid, IonRow, IonCol, IonAlert]
 })
-export class ReservarPage implements OnInit {
+export class ReservarPage implements OnInit, ViewWillEnter {
   fechaSeleccionada: string = new Date().toISOString();
   fechaMinima = new Date().toISOString();
   
@@ -58,8 +60,10 @@ export class ReservarPage implements OnInit {
 
   constructor(
     private supabaseService: SupabaseService,
+    public authService: AuthService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private alertController: AlertController
   ) {}
 
   async ngOnInit() {
@@ -81,6 +85,12 @@ export class ReservarPage implements OnInit {
       this.cargando = false;
       console.log('Cargando = false');
     }
+  }
+
+  async ionViewWillEnter() {
+    console.log('🔄 Entrando a vista Reservar - Refrescando disponibilidad');
+    // Recargar disponibilidad cada vez que se entra a la página
+    await this.cargarDisponibilidad();
   }
 
 
@@ -228,6 +238,45 @@ export class ReservarPage implements OnInit {
   // Disponibilidad real desde la base de datos
   reservasDelDia: any[] = [];
   disponibilidad: any = {};
+  
+  // Alert de cancelación
+  public cancelAlertButtons = [
+    {
+      text: 'No',
+      cssClass: 'alert-button-cancel',
+      role: 'cancel'
+    },
+    {
+      text: 'Sí, cancelar',
+      cssClass: 'alert-button-confirm',
+      handler: () => {
+        if (this.reservaACancelar) {
+          this.cancelarReserva(
+            this.reservaACancelar.horaInicio, 
+            this.reservaACancelar.horaFin, 
+            this.reservaACancelar.salaId
+          );
+        }
+      }
+    }
+  ];
+  reservaACancelar: any = null;
+
+  // Alert de confirmación
+  public confirmAlertButtons = [
+    {
+      text: 'Cancelar',
+      cssClass: 'alert-button-cancel',
+      role: 'cancel'
+    },
+    {
+      text: 'Confirmar',
+      cssClass: 'alert-button-confirm',
+      handler: () => {
+        this.procesarReserva();
+      }
+    }
+  ];
 
   get salasDelEdificio() {
     return this.salas;
@@ -361,34 +410,70 @@ export class ReservarPage implements OnInit {
   }
 
   toggleHorario(horario: string, salaId: number, index: number) {
+    console.log('=== TOGGLE HORARIO ===');
+    console.log('Horario clickeado:', horario);
+    console.log('Sala ID:', salaId);
+    console.log('Index:', index);
+    console.log('Estado actual - salaSeleccionada:', this.salaSeleccionada);
+    console.log('Estado actual - horariosSeleccionados:', this.horariosSeleccionados);
+    
     const estado = this.getEstadoHorario(salaId, index);
-    console.log('Click en horario:', horario, 'Estado:', estado);
+    console.log('Estado del horario:', estado);
     
     // Si es ocupado por otro, no hacer nada
     if (estado === 'ocupado') {
-      console.log('Horario ocupado por otro usuario, no se puede hacer nada');
+      console.log('❌ Horario ocupado por otro usuario, no se puede hacer nada');
       return;
     }
     
     // Si es mi reserva, mostrar opción de cancelar
     if (estado === 'mi-reserva') {
-      console.log('Es mi reserva, mostrando opciones de cancelación');
+      console.log('🟡 Es mi reserva, mostrando opciones de cancelación');
       this.mostrarOpcionesCancelacion(horario, salaId);
       return;
     }
 
     // Si es disponible, permitir selección
-    console.log('Horario disponible, permitiendo selección');
+    console.log('✅ Horario disponible, procesando selección...');
     
-    // Si es el mismo horario y sala, deseleccionar
-    if (this.salaSeleccionada === salaId && this.horariosSeleccionados.includes(horario)) {
-      this.salaSeleccionada = null;
+    // Si cambia de sala, limpiar selección anterior
+    if (this.salaSeleccionada !== null && this.salaSeleccionada !== salaId) {
+      console.log('🔄 Cambiando de sala, limpiando selección anterior');
+      console.log('Sala anterior:', this.salaSeleccionada, '-> Nueva sala:', salaId);
       this.horariosSeleccionados = [];
-    } else {
-      // Seleccionar solo este horario y sala
-      this.salaSeleccionada = salaId;
-      this.horariosSeleccionados = [horario];
     }
+    
+    // Establecer sala seleccionada
+    console.log('🏢 Estableciendo sala seleccionada:', salaId);
+    this.salaSeleccionada = salaId;
+    
+    // Toggle del horario: agregar o quitar de la lista
+    if (this.horariosSeleccionados.includes(horario)) {
+      console.log('➖ Quitando horario de la selección:', horario);
+      // Quitar horario si ya está seleccionado
+      this.horariosSeleccionados = this.horariosSeleccionados.filter(h => h !== horario);
+      
+      // Si no quedan horarios seleccionados, limpiar sala
+      if (this.horariosSeleccionados.length === 0) {
+        console.log('🧹 No quedan horarios, limpiando sala seleccionada');
+        this.salaSeleccionada = null;
+      }
+    } else {
+      console.log('➕ Agregando horario a la selección:', horario);
+      // Agregar horario a la selección
+      this.horariosSeleccionados.push(horario);
+      // Ordenar horarios seleccionados
+      this.horariosSeleccionados.sort();
+    }
+    
+    console.log('Estado final - salaSeleccionada:', this.salaSeleccionada);
+    console.log('Estado final - horariosSeleccionados:', this.horariosSeleccionados);
+    
+    // Forzar actualización de la UI
+    console.log('🔄 Forzando detección de cambios...');
+    this.cdr.detectChanges();
+    
+    console.log('=== FIN TOGGLE HORARIO ===');
   }
 
   isHorarioSeleccionado(horario: string): boolean {
@@ -400,104 +485,95 @@ export class ReservarPage implements OnInit {
     return sala ? sala.nombre : '';
   }
 
-  async confirmarReserva() {
-    console.log('=== INICIANDO CONFIRMACIÓN DE RESERVA ===');
-    console.log('Sala seleccionada:', this.salaSeleccionada);
-    console.log('Horarios seleccionados:', this.horariosSeleccionados);
-    console.log('Propósito:', this.proposito);
-    
+  confirmarReserva() {
     if (!this.salaSeleccionada || this.horariosSeleccionados.length === 0 || !this.proposito.trim()) {
-      console.log('Validación fallida - campos incompletos');
-      alert('Por favor completa todos los campos');
+      const alertElement = document.getElementById('error-alert');
+      if (alertElement) {
+        (alertElement as any).present();
+      }
       return;
     }
 
     if (!this.supabaseService.user) {
-      console.log('Usuario no autenticado');
-      alert('Debes estar autenticado para hacer una reserva');
       return;
     }
 
-    // Verificar si ya tiene una reserva en este día
-    const misReservasDelDia = this.reservasDelDia.filter(r => r.usuario_id === this.supabaseService.user?.id);
-    if (misReservasDelDia.length > 0) {
-      console.log('Usuario ya tiene reserva en este día');
-      alert('❌ Ya tienes una reserva para este día. Solo puedes hacer una reserva por día.');
-      return;
+    // Mostrar alert de confirmación
+    const alertElement = document.getElementById('confirm-alert');
+    if (alertElement) {
+      (alertElement as any).present();
     }
+  }
 
-    // Validar que solo sea un horario
-    if (this.horariosSeleccionados.length > 1) {
-      console.log('Múltiples horarios seleccionados');
-      alert('❌ Solo puedes reservar un bloque de horario a la vez.');
-      return;
-    }
-
-    console.log('Usuario autenticado:', this.supabaseService.user.email);
+  async procesarReserva() {
+    console.log('=== PROCESANDO RESERVA ===');
     this.cargando = true;
 
-    // Saltamos la creación de usuario por ahora
-    console.log('Saltando creación de usuario, procediendo con reserva...');
-
     try {
-      // Crear la reserva (solo un horario)
-      const horario = this.horariosSeleccionados[0];
-      console.log('Procesando horario:', horario);
-      const [horaInicio, horaFin] = horario.split('-');
-      console.log('Hora inicio:', horaInicio, 'Hora fin:', horaFin);
+      const reservasCreadas = [];
+      const errores = [];
       
-      // Crear la reserva
-      const reservaData = {
-        fecha: this.fechaParaConsulta,
-        hora_inicio: horaInicio,
-        hora_fin: horaFin,
-        sala_id: this.salaSeleccionada,
-        usuario_id: this.supabaseService.user.id,
-        proposito: this.proposito
-      };
-      
-      console.log('Datos de reserva a crear:', reservaData);
-      console.log('Llamando a crearReserva...');
-      
-      const { data, error } = await this.supabaseService.crearReserva(reservaData);
-      
-      console.log('Respuesta de crearReserva - data:', data);
-      console.log('Respuesta de crearReserva - error:', error);
-      
-      if (error) {
-        console.error('Error creando reserva:', error);
-        alert(`❌ Error al crear la reserva: ${error.message}`);
-        this.cargando = false;
-        return;
+      for (const horario of this.horariosSeleccionados) {
+        const [horaInicio, horaFin] = horario.split('-');
+        
+        const reservaData = {
+          fecha: this.fechaParaConsulta,
+          hora_inicio: horaInicio,
+          hora_fin: horaFin,
+          sala_id: this.salaSeleccionada,
+          usuario_id: this.supabaseService.user!.id,
+          proposito: this.proposito
+        };
+        
+        const { data, error } = await this.supabaseService.crearReserva(reservaData);
+        
+        if (error) {
+          errores.push(`${horario}: ${error.message}`);
+        } else {
+          reservasCreadas.push(horario);
+        }
       }
       
-      console.log('Reserva creada exitosamente:', data);
-
-      console.log('Reserva creada exitosamente');
-      alert(`✅ Reserva confirmada para ${this.getSalaNombre(this.salaSeleccionada)} el ${this.fechaFormateada}`);
+      // Mostrar resultado
+      if (reservasCreadas.length > 0) {
+        this.reservasExitosas = reservasCreadas.length;
+        this.salaReservada = this.getSalaNombre(this.salaSeleccionada!);
+        
+        const alertElement = document.getElementById('success-alert');
+        if (alertElement) {
+          (alertElement as any).present();
+        }
+      }
       
-      // Limpiar formulario ANTES de recargar
-      console.log('Limpiando formulario...');
+      // Limpiar formulario completamente (sin tocar reservasExitosas y salaReservada)
       this.horariosSeleccionados = [];
       this.salaSeleccionada = null;
       this.proposito = '';
       
-      // Recargar disponibilidad desde la base de datos
-      console.log('Recargando disponibilidad...');
+      // Forzar limpieza del estado
+      this.reservasDelDia = [];
+      this.disponibilidad = {};
+      
+      // Recargar todo desde cero
+      await this.cargarSalas();
       await this.cargarDisponibilidad();
       
-      // Forzar una segunda detección de cambios para asegurar la actualización visual
+      // Forzar re-filtrado de salas
+      this.filtrarSalasPorEdificio();
+      
+      // Múltiples detecciones de cambios
+      this.cdr.detectChanges();
       setTimeout(() => {
         this.cdr.detectChanges();
-        console.log('Detección de cambios forzada después de crear reserva');
       }, 100);
+      setTimeout(() => {
+        this.cdr.detectChanges();
+      }, 300);
       
     } catch (error) {
-      console.error('Error en catch general:', error);
-      alert('❌ Error inesperado al crear la reserva');
+      console.error('Error:', error);
     } finally {
       this.cargando = false;
-      console.log('=== FIN CONFIRMACIÓN DE RESERVA ===');
     }
   }
 
@@ -528,18 +604,41 @@ export class ReservarPage implements OnInit {
 
   mostrarOpcionesCancelacion(horario: string, salaId: number) {
     const [horaInicio, horaFin] = horario.split('-');
-    const salaNombre = this.getSalaNombre(salaId);
     
-    const confirmar = confirm(
-      `¿Quieres cancelar tu reserva?\n\n` +
-      `Sala: ${salaNombre}\n` +
-      `Horario: ${horario}\n` +
-      `Fecha: ${this.fechaFormateada}`
-    );
+    // Preparar datos para el alert
+    this.reservaACancelar = { horaInicio, horaFin, salaId };
     
-    if (confirmar) {
-      this.cancelarReserva(horaInicio, horaFin, salaId);
+    // Abrir el alert usando el trigger
+    const alertElement = document.getElementById('cancel-alert');
+    if (alertElement) {
+      (alertElement as any).present();
     }
+  }
+  
+  get cancelAlertMessage(): string {
+    if (!this.reservaACancelar) return '';
+    
+    const horario = `${this.reservaACancelar.horaInicio}-${this.reservaACancelar.horaFin}`;
+    const salaNombre = this.getSalaNombre(this.reservaACancelar.salaId);
+    
+    return `Sala: ${salaNombre} - Horario: ${horario} - Fecha: ${this.fechaFormateada}`;
+  }
+
+  get confirmAlertMessage(): string {
+    if (!this.salaSeleccionada) return '';
+    
+    const salaNombre = this.getSalaNombre(this.salaSeleccionada);
+    const horarios = this.horariosSeleccionados.join(', ');
+    
+    return `Sala: ${salaNombre} - Horarios: ${horarios} - Fecha: ${this.fechaFormateada}`;
+  }
+
+  reservasExitosas = 0;
+  salaReservada = '';
+
+  get successAlertMessage(): string {
+    const horas = this.reservasExitosas === 1 ? 'hora' : 'horas';
+    return `Reserva confirmada de ${this.reservasExitosas} ${horas} para ${this.salaReservada} el ${this.fechaFormateada}`;
   }
 
   async cancelarReserva(horaInicio: string, horaFin: string, salaId: number) {

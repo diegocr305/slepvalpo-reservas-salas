@@ -1,0 +1,131 @@
+<!-- Ejemplo de uso de roles en la UI - reservar.component.html -->
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Reservar Sala</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Mensaje para funcionarios sin permisos -->
+  <ion-card *ngIf="authService.isFuncionario()" color="warning">
+    <ion-card-content>
+      <div class="ion-text-center">
+        <ion-icon name="information-circle-outline" size="large"></ion-icon>
+        <h3>Solo visualización</h3>
+        <p>Como funcionario, puedes ver la disponibilidad pero no crear reservas.</p>
+        <p>Contacta a tu supervisor para solicitar una reserva.</p>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Selector de fecha (visible para todos) -->
+  <div class="fecha-principal">
+    <h1>{{fechaFormateada}}</h1>
+    <ion-button fill="outline" size="small" (click)="abrirCalendario()">
+      <ion-icon name="calendar-outline" slot="start"></ion-icon>
+      Elegir fecha
+    </ion-button>
+  </div>
+
+  <!-- Grilla de horarios (visible para todos) -->
+  <div class="grilla-container">
+    <div *ngFor="let sala of salas" class="sala-row">
+      <div class="sala-info">
+        <div class="sala-nombre">{{sala.nombre}}</div>
+        <div class="sala-capacidad">{{sala.capacidad}} personas</div>
+      </div>
+      
+      <div class="horarios-grid">
+        <div 
+          *ngFor="let horario of horarios; let i = index"
+          class="horario-slot"
+          [class.disponible]="getEstadoHorario(sala.id, i) === 'disponible'"
+          [class.ocupado]="getEstadoHorario(sala.id, i) === 'ocupado'"
+          [class.selected]="salaSeleccionada === sala.id && isHorarioSeleccionado(horario)"
+          (click)="authService.canCreateReservations() ? toggleHorario(horario, sala.id, i) : null"
+          [style.cursor]="authService.canCreateReservations() ? 'pointer' : 'not-allowed'">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resumen de selección - Solo para roles con permisos -->
+  <ion-card *ngIf="authService.canCreateReservations() && salaSeleccionada && horariosSeleccionados.length > 0" class="resumen-card">
+    <ion-card-header>
+      <ion-card-title>📋 Resumen de Reserva</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="resumen-info">
+        <div><strong>Fecha:</strong> {{fechaFormateada}}</div>
+        <div><strong>Sala:</strong> {{getSalaNombre(salaSeleccionada)}}</div>
+        <div><strong>Horarios:</strong> {{horariosTexto}}</div>
+      </div>
+
+      <ion-item>
+        <ion-label position="stacked">Propósito de la Reunión</ion-label>
+        <ion-textarea 
+          [(ngModel)]="proposito"
+          placeholder="Describe brevemente el propósito de la reunión"
+          rows="3">
+        </ion-textarea>
+      </ion-item>
+
+      <!-- Botón de reservar - Solo para admin y subdirector -->
+      <ion-button 
+        *ngIf="authService.canCreateReservations()"
+        expand="block" 
+        size="large"
+        (click)="confirmarReserva()"
+        [disabled]="!proposito || proposito.trim().length === 0">
+        <ion-icon name="calendar" slot="start"></ion-icon>
+        Confirmar Reserva
+      </ion-button>
+
+      <!-- Botón de editar - Solo para admin y subdirector -->
+      <ion-button 
+        *ngIf="authService.canEditReservations() && reservaExistente"
+        expand="block" 
+        fill="outline"
+        (click)="editarReserva()">
+        <ion-icon name="create-outline" slot="start"></ion-icon>
+        Editar Reserva
+      </ion-button>
+
+      <!-- Botón de eliminar - Solo para admin -->
+      <ion-button 
+        *ngIf="authService.canDeleteReservations() && reservaExistente"
+        expand="block" 
+        color="danger"
+        fill="outline"
+        (click)="eliminarReserva()">
+        <ion-icon name="trash-outline" slot="start"></ion-icon>
+        Eliminar Reserva
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Panel de estadísticas - Solo para super_admin -->
+  <ion-card *ngIf="authService.canAccessAdminPanel()">
+    <ion-card-header>
+      <ion-card-title>🔧 Panel de Administración</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-button 
+        expand="block" 
+        routerLink="/admin/estadisticas"
+        fill="outline">
+        <ion-icon name="analytics-outline" slot="start"></ion-icon>
+        Ver Estadísticas
+      </ion-button>
+      
+      <ion-button 
+        expand="block" 
+        routerLink="/admin/usuarios"
+        fill="outline">
+        <ion-icon name="people-outline" slot="start"></ion-icon>
+        Gestionar Usuarios
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>

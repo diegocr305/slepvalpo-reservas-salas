@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel, IonHeader, IonToolbar, IonButton, IonFab, IonFabButton, IonChip, IonButtons } from '@ionic/angular/standalone';
 import { SupabaseService } from '../../services/supabase.service';
 import { CommonModule } from '@angular/common';
+import { addIcons } from 'ionicons';
+import { addCircleOutline, listOutline, logOutOutline, personCircleOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-tabs',
@@ -15,7 +17,7 @@ import { CommonModule } from '@angular/common';
         </div>
         
         <ion-buttons slot="end" *ngIf="usuario">
-          <ion-chip color="primary" (click)="logout()" style="cursor: pointer;">
+          <ion-chip color="primary">
             <ion-icon name="person-circle-outline"></ion-icon>
             <ion-label>
               <div style="text-align: left; line-height: 1.2;">
@@ -24,7 +26,10 @@ import { CommonModule } from '@angular/common';
                 <div style="font-size: 10px; opacity: 0.7;" *ngIf="usuario.area">{{usuario.area}}</div>
               </div>
             </ion-label>
-            <ion-icon name="log-out-outline" style="margin-left: 8px;"></ion-icon>
+          </ion-chip>
+          <ion-chip color="danger" (click)="logout()" style="cursor: pointer; margin-left: 8px;">
+            <ion-icon name="log-out-outline"></ion-icon>
+            <ion-label style="text-align: center;">Salir</ion-label>
           </ion-chip>
         </ion-buttons>
       </ion-toolbar>
@@ -42,10 +47,7 @@ import { CommonModule } from '@angular/common';
           <ion-label>Mis Reservas</ion-label>
         </ion-tab-button>
         
-        <ion-tab-button (click)="logout()">
-          <ion-icon name="log-out-outline"></ion-icon>
-          <ion-label>Salir</ion-label>
-        </ion-tab-button>
+
       </ion-tab-bar>
     </ion-tabs>
   `,
@@ -58,7 +60,9 @@ export class TabsComponent implements OnInit {
   constructor(
     private supabaseService: SupabaseService,
     private router: Router
-  ) {}
+  ) {
+    addIcons({ addCircleOutline, listOutline, logOutOutline, personCircleOutline });
+  }
 
   async ngOnInit() {
     await this.cargarUsuario();

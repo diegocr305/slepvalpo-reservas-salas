@@ -1,17 +1,55 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Mis Reservas</ion-title>
+    <ion-title>
+      {{ modoSoloLectura ? 'Reservas del Día' : 'Gestión de Reservas' }}
+    </ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Mis Reservas</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <!-- Refresher para actualizar -->
+  <ion-refresher slot="fixed" (ionRefresh)="cargarReservas($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
 
+  <!-- Navegación de fechas -->
+  <ion-card>
+    <ion-card-content>
+      <div class="fecha-navegacion">
+        <ion-button 
+          fill="clear" 
+          (click)="changeDay('prev')"
+          [disabled]="cargando">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </ion-button>
+        
+        <div class="fecha-info">
+          <h2>{{ fechaFormateada }}</h2>
+          <p *ngIf="!cargando">{{ totalReservas }} reserva(s) encontrada(s)</p>
+        </div>
+        
+        <ion-button 
+          fill="clear" 
+          (click)="changeDay('next')"
+          [disabled]="cargando">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
 
+  <!-- Indicador de modo -->
+  <ion-card *ngIf="modoSoloLectura" color="warning">
+    <ion-card-content>
+      <div class="modo-info">
+        <ion-icon name="eye-outline"></ion-icon>
+        <div>
+          <strong>Modo Solo Lectura</strong>
+          <p>Como funcionario, puedes ver todas las reservas pero no editarlas.</p>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
 
   <!-- Loading -->
   <div *ngIf="cargando" class="loading-container">
@@ -20,76 +58,267 @@
   </div>
 
   <!-- Sin reservas -->
-  <div *ngIf="!cargando && !primeraCarga && reservas.length === 0" class="ion-text-center ion-padding">
-    <ion-icon name="calendar-outline" size="large" color="medium"></ion-icon>
-    <h2>No tienes reservas</h2>
-    <p>Crea tu primera reserva para comenzar</p>
-    <ion-button routerLink="/reservar" expand="block">
-      <ion-icon name="add" slot="start"></ion-icon>
-      Nueva Reserva
-    </ion-button>
-  </div>
+  <ion-card *ngIf="!cargando && reservas.length === 0">
+    <ion-card-content class="sin-reservas">
+      <ion-icon name="calendar-outline" size="large" color="medium"></ion-icon>
+      <h3>No hay reservas</h3>
+      <p>No se encontraron reservas para esta fecha</p>
+    </ion-card-content>
+  </ion-card>
 
-  <!-- Lista de reservas -->
-  <div *ngIf="!cargando && reservas.length > 0" class="ion-padding">
-    <ion-card *ngFor="let reserva of reservas" class="reserva-card">
+  <!-- Lista de reservas compacta -->
+  <div *ngIf="!cargando && reservas.length > 0" class="reservas-grid">
+    <ion-card *ngFor="let reserva of reservas" class="reserva-card-compacta">
       <ion-card-header>
-        <div class="header-row">
-          <div class="sala-title">
-            <h2>Sala {{reserva.sala_nombre}}</h2>
-            <p>Edificio {{reserva.edificio_nombre}}</p>
-          </div>
-          <ion-chip [color]="getColorEstado(reserva.estado)">
-            <ion-icon [name]="getIconoEstado(reserva.estado)"></ion-icon>
-            <ion-label>{{reserva.estado | titlecase}}</ion-label>
-          </ion-chip>
-        </div>
+        <ion-card-title>{{ reserva.sala_nombre }}</ion-card-title>
+        <ion-card-subtitle>{{ reserva.edificio_nombre }} • {{ reserva.hora_inicio }}-{{ reserva.hora_fin }}</ion-card-subtitle>
       </ion-card-header>
 
       <ion-card-content>
-        <div class="info-grid">
-          <div class="info-item">
-            <ion-icon name="calendar-outline"></ion-icon>
-            <div>
-              <strong>Fecha</strong>
-              <p>{{reserva.fecha}}</p>
-            </div>
-          </div>
-          
-          <div class="info-item">
-            <ion-icon name="time-outline"></ion-icon>
-            <div>
-              <strong>Horario</strong>
-              <p>{{reserva.hora_inicio}} - {{reserva.hora_fin}}</p>
-            </div>
-          </div>
-          
-          <div class="info-item" *ngIf="reserva.proposito">
-            <ion-icon name="document-text-outline"></ion-icon>
-            <div>
-              <strong>Motivo de la reunión</strong>
-              <p>{{reserva.proposito}}</p>
-            </div>
-          </div>
+        <div class="reserva-info">
+          <p><strong>{{ reserva.usuario_nombre }}</strong></p>
+          <p *ngIf="reserva.usuario_area" class="area">{{ reserva.usuario_area }}</p>
+          <p *ngIf="reserva.proposito" class="proposito">{{ reserva.proposito }}</p>
         </div>
-        
-        <ion-button 
-          expand="block" 
-          fill="outline" 
-          color="danger"
-          class="cancel-btn"
-          (click)="cancelarReserva(reserva)">
-          <ion-icon name="close-circle-outline" slot="start"></ion-icon>
-          Cancelar Reserva
-        </ion-button>
+
+        <div class="reserva-badges">
+          <ion-chip *ngIf="esMiReserva(reserva)" color="primary" size="small">
+            <ion-label>Mi Reserva</ion-label>
+          </ion-chip>
+          
+          <ion-chip *ngIf="modoSoloLectura" color="medium" size="small" fill="outline">
+            <ion-label>Solo lectura</ion-label>
+          </ion-chip>
+        </div>
+
+        <div class="acciones-compactas" *ngIf="!modoSoloLectura">
+          <ion-button 
+            *ngIf="puedeEditar(reserva)"
+            fill="clear" 
+            size="small"
+            (click)="editarReserva(reserva)">
+            <ion-icon name="create-outline"></ion-icon>
+          </ion-button>
+
+          <ion-button 
+            *ngIf="puedeCancelar(reserva)"
+            fill="clear" 
+            size="small"
+            color="danger"
+            (click)="cancelarReserva(reserva)">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+        </div>
       </ion-card-content>
     </ion-card>
   </div>
 
-  <!-- Botón flotante para nueva reserva -->
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button routerLink="/reservar">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+  <!-- Edición con chips dinámicos -->
+  <ion-card *ngIf="mostrandoEdicion && reservaAEditar" class="edicion-card">
+    <ion-card-header>
+      <ion-card-title>Editar: {{ reservaAEditar.sala_nombre }}</ion-card-title>
+      <p>Toca la X para eliminar cada bloque horario:</p>
+    </ion-card-header>
+    
+    <ion-card-content>
+      <div class="chips-edicion">
+        <ion-chip 
+          *ngFor="let bloque of bloquesParaEditar" 
+          color="primary"
+          (click)="eliminarChipBloque(bloque)">
+          <ion-icon name="time-outline"></ion-icon>
+          <ion-label>{{ bloque.horario }}</ion-label>
+          <ion-icon name="close-circle"></ion-icon>
+        </ion-chip>
+      </div>
+      
+      <div class="acciones-edicion">
+        <ion-chip 
+          color="danger"
+          (click)="cancelarReserva(reservaAEditar!)"
+          style="cursor: pointer;">
+          <ion-icon name="trash-outline"></ion-icon>
+          <ion-label>Cancelar todas</ion-label>
+        </ion-chip>
+        
+        <ion-chip 
+          color="medium"
+          (click)="cerrarEdicion()"
+          style="cursor: pointer;">
+          <ion-icon name="close-circle"></ion-icon>
+          <ion-label>Cerrar</ion-label>
+        </ion-chip>
+      </div>
+    </ion-card-content>
+  </ion-card>
 </ion-content>
+
+<style>
+.fecha-navegacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+}
+
+.fecha-info {
+  text-align: center;
+  flex: 1;
+}
+
+.fecha-info h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.fecha-info p {
+  margin: 4px 0 0 0;
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+}
+
+.sin-reservas {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.sin-reservas ion-icon {
+  margin-bottom: 16px;
+}
+
+.sin-reservas h3 {
+  margin: 16px 0 8px 0;
+  color: var(--ion-color-medium);
+}
+
+.reservas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.reserva-card-compacta {
+  margin: 0;
+  min-height: 180px;
+}
+
+.reserva-card-compacta ion-card-header {
+  padding-bottom: 8px;
+}
+
+.reserva-card-compacta ion-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.reserva-card-compacta ion-card-subtitle {
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+.reserva-info {
+  margin-bottom: 12px;
+}
+
+.reserva-info p {
+  margin: 4px 0;
+  font-size: 0.9rem;
+}
+
+.reserva-info .area {
+  color: var(--ion-color-medium);
+  font-size: 0.8rem;
+}
+
+.reserva-info .proposito {
+  font-style: italic;
+  color: var(--ion-color-dark);
+}
+
+.reserva-badges {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.acciones-compactas {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+  .reservas-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.modo-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modo-info ion-icon {
+  font-size: 24px;
+  color: var(--ion-color-warning);
+}
+
+.modo-info div h4 {
+  margin: 0 0 4px 0;
+}
+
+.modo-info div p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.edicion-card {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.chips-edicion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.chips-edicion ion-chip {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.chips-edicion ion-chip:hover {
+  transform: scale(1.05);
+}
+
+.acciones-edicion {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--ion-color-light);
+}
+</style>

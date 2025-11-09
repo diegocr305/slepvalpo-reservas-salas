@@ -117,7 +117,8 @@
             [class.ocupado]="getEstadoHorario(sala.id, i) === 'ocupado'"
             [class.mi-reserva]="getEstadoHorario(sala.id, i) === 'mi-reserva'"
             [class.selected]="salaSeleccionada === sala.id && isHorarioSeleccionado(horario)"
-            (click)="toggleHorario(horario, sala.id, i)">
+            (click)="toggleHorario(horario, sala.id, i)"
+            id="horario-slot-{{sala.id}}-{{i}}">
           </div>
         </div>
       </div>
@@ -144,8 +145,8 @@
     </div>
   </div>
 
-  <!-- Resumen de selección -->
-  <ion-card *ngIf="salaSeleccionada && horariosSeleccionados.length > 0" class="resumen-card">
+  <!-- Resumen de selección - Solo para roles con permisos -->
+  <ion-card *ngIf="authService.canCreateReservations() && salaSeleccionada && horariosSeleccionados.length > 0" class="resumen-card">
     <ion-card-header>
       <ion-card-title>📋 Resumen de Reserva</ion-card-title>
     </ion-card-header>
@@ -170,10 +171,45 @@
         size="large"
         (click)="confirmarReserva()"
         [disabled]="puedeConfirmar">
-        Hacer una reserva
+        Confirmar Reserva
       </ion-button>
     </ion-card-content>
   </ion-card>
 
+  <!-- Alert de cancelación -->
+  <ion-alert
+    id="cancel-alert"
+    class="custom-alert"
+    header="Cancelar reserva?"
+    [message]="cancelAlertMessage"
+    [buttons]="cancelAlertButtons">
+  </ion-alert>
+
+  <!-- Alert de confirmación -->
+  <ion-alert
+    id="confirm-alert"
+    class="custom-alert"
+    header="Confirmar reserva?"
+    [message]="confirmAlertMessage"
+    [buttons]="confirmAlertButtons">
+  </ion-alert>
+
+  <!-- Alert de éxito -->
+  <ion-alert
+    id="success-alert"
+    class="custom-alert"
+    header="Reserva exitosa"
+    [message]="successAlertMessage"
+    [buttons]="[{text: 'Aceptar', role: 'cancel'}]">
+  </ion-alert>
+
+  <!-- Alert de error -->
+  <ion-alert
+    id="error-alert"
+    class="custom-alert"
+    header="Campos incompletos"
+    message="Por favor completa todos los campos"
+    [buttons]="[{text: 'Aceptar', role: 'cancel'}]">
+  </ion-alert>
 
 </ion-content>

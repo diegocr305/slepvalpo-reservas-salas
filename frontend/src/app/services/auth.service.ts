@@ -1,160 +1,110 @@
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { SupabaseService } from './supabase.service';
-import { Usuario } from '../models/usuario.model';
+
+export interface Usuario {
+  id: string;
+  email: string;
+  nombre_completo: string;
+  area?: string;
+  rol: 'super_admin' | 'admin' | 'subdirector' | 'funcionario';
+  activo: boolean;
+  created_at: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private isAuthenticated = new BehaviorSubject<boolean>(false);
-  private currentUserProfile = new BehaviorSubject<Usuario | null>(null);
+  private currentUser = new BehaviorSubject<Usuario | null>(null);
+  public user$ = this.currentUser.asObservable();
 
-  constructor(
-    private supabase: SupabaseService,
-    private router: Router
-  ) {
+  constructor(private supabaseService: SupabaseService) {
     this.initializeAuth();
   }
 
-  get isAuthenticated$(): Observable<boolean> {
-    return this.isAuthenticated.asObservable();
-  }
-
-  get userProfile$(): Observable<Usuario | null> {
-    return this.currentUserProfile.asObservable();
-  }
-
-  get userProfile(): Usuario | null {
-    return this.currentUserProfile.value;
-  }
-
-  get isAdmin(): boolean {
-    return this.currentUserProfile.value?.es_admin ?? false;
-  }
-
   private async initializeAuth() {
-    this.supabase.user$.subscribe(async (user) => {
-      console.log('🔐 Cambio en autenticación:', user);
-      if (user) {
-        console.log('✅ Usuario autenticado:', user.id);
-        this.isAuthenticated.next(true);
-        await this.loadUserProfile(user.id);
+    // Escuchar cambios de autenticación
+    this.supabaseService.user$.subscribe(async (authUser) => {
+      if (authUser?.email) {
+        await this.loadUserProfile(authUser.email);
       } else {
-        console.log('❌ Usuario no autenticado');
-        this.isAuthenticated.next(false);
-        this.currentUserProfile.next(null);
+        this.currentUser.next(null);
       }
     });
   }
 
-  private async loadUserProfile(userId: string) {
-    console.log('🔍 Cargando perfil de usuario para ID:', userId);
+  private async loadUserProfile(email: string) {
     try {
-      const { data, error } = await this.supabase.select('usuarios', '*', { id: userId });
-      
-      console.log('📊 Respuesta de usuarios:', { data, error });
-      
-      if (error) throw error;
-      
-      if (data && data.length > 0) {
-        console.log('✅ Perfil encontrado:', data[0]);
-        this.currentUserProfile.next(data[0] as unknown as Usuario);
-      } else {
-        console.log('🆕 Usuario no existe, creando perfil...');
-        // Crear perfil de usuario si no existe
-        await this.createUserProfile(userId);
+      const { data, error } = await this.supabaseService.supabase
+        .from('usuarios')
+        .select('*')
+        .eq('email', email)
+        .eq('activo', true)
+        .single();
+
+      if (data && !error) {
+        this.currentUser.next(data as Usuario);
       }
     } catch (error) {
-      console.error('❌ Error cargando perfil de usuario:', error);
+      console.error('Error cargando perfil de usuario:', error);
     }
   }
 
-  private async createUserProfile(userId: string) {
-    const user = this.supabase.user;
-    if (!user) return;
-
-    const newUser: Partial<Usuario> = {
-      id: userId,
-      email: user.email!,
-      nombre_completo: user.user_metadata?.['full_name'] || user.email!,
-      es_admin: false,
-      activo: true
-    };
-
-    try {
-      const { data, error } = await this.supabase.insert('usuarios', newUser);
-      if (error) throw error;
-      
-      if (data && data[0]) {
-        this.currentUserProfile.next(data[0] as Usuario);
-      }
-    } catch (error) {
-      console.error('Error creando perfil de usuario:', error);
-    }
+  // Getters para el usuario actual
+  get user(): Usuario | null {
+    return this.currentUser.value;
   }
 
-  async signInWithGoogle() {
-    try {
-      const { error } = await this.supabase.signInWithGoogle();
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error en login con Google:', error);
-      throw error;
-    }
+  get userRole(): string | null {
+    return this.user?.rol || null;
   }
 
-  async signInWithMicrosoft() {
-    try {
-      const { error } = await this.supabase.signInWithMicrosoft();
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error en login con Microsoft:', error);
-      throw error;
-    }
+  // Métodos de verificación de roles
+  isSuperAdmin(): boolean {
+    return this.user?.rol === 'super_admin';
   }
 
-  async signOut() {
-    try {
-      const { error } = await this.supabase.signOut();
-      if (error) throw error;
-      
-      this.router.navigate(['/login']);
-    } catch (error) {
-      console.error('Error en logout:', error);
-      throw error;
-    }
+  isAdmin(): boolean {
+    return this.user?.rol === 'admin' || this.isSuperAdmin();
   }
 
-  async updateProfile(profileData: Partial<Usuario>) {
-    const userId = this.supabase.user?.id;
-    if (!userId) throw new Error('Usuario no autenticado');
-
-    try {
-      const { data, error } = await this.supabase.update('usuarios', userId, profileData);
-      if (error) throw error;
-      
-      // Actualizar el perfil local
-      const currentProfile = this.currentUserProfile.value;
-      if (currentProfile) {
-        this.currentUserProfile.next({ ...currentProfile, ...profileData });
-      }
-      
-      return data;
-    } catch (error) {
-      console.error('Error actualizando perfil:', error);
-      throw error;
-    }
+  isSubdirector(): boolean {
+    return this.user?.rol === 'subdirector';
   }
 
-  canAccess(requiredRole: 'user' | 'admin' = 'user'): boolean {
-    if (!this.isAuthenticated.value) return false;
-    
-    if (requiredRole === 'admin') {
-      return this.isAdmin;
-    }
-    
-    return true;
+  isFuncionario(): boolean {
+    return this.user?.rol === 'funcionario';
+  }
+
+  // Métodos de verificación de permisos
+  canCreateReservations(): boolean {
+    return this.isAdmin() || this.isSubdirector();
+  }
+
+  canEditReservations(): boolean {
+    return this.isAdmin() || this.isSubdirector();
+  }
+
+  canDeleteReservations(): boolean {
+    return this.isAdmin();
+  }
+
+  canAccessAdminPanel(): boolean {
+    return this.isSuperAdmin();
+  }
+
+  canViewStatistics(): boolean {
+    return this.isSuperAdmin();
+  }
+
+  // Método para verificar si tiene al menos uno de los roles
+  hasAnyRole(roles: string[]): boolean {
+    return roles.includes(this.userRole || '');
+  }
+
+  // Método para verificar si es usuario activo
+  isActiveUser(): boolean {
+    return this.user?.activo === true;
   }
 }

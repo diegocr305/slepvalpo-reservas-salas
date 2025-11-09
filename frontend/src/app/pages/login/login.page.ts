@@ -22,6 +22,7 @@ export class LoginPage implements OnInit {
     // Si ya está autenticado, redirigir
     this.supabaseService.user$.subscribe(user => {
       if (user) {
+        this.loading = false; // Asegurar que loading se desactive
         this.router.navigate(['/tabs/reservar']);
       }
     });
@@ -35,11 +36,13 @@ export class LoginPage implements OnInit {
       if (error) {
         console.error('Error en login:', error);
         alert('Error al iniciar sesión: ' + error.message);
+        this.loading = false;
       }
+      // No ponemos loading = false aquí porque el login con Google redirige
+      // El loading se desactivará cuando el usuario regrese autenticado
     } catch (error) {
       console.error('Error:', error);
       alert('Error inesperado al iniciar sesión');
-    } finally {
       this.loading = false;
     }
   }

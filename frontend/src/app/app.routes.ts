@@ -13,7 +13,7 @@ export const routes: Routes = [
   },
   {
     path: 'auth/callback',
-    loadComponent: () => import('./pages/login/login.page').then(m => m.LoginPage)
+    loadComponent: () => import('./pages/auth-callback/auth-callback.page').then(m => m.AuthCallbackPage)
   },
   {
     path: 'tabs',

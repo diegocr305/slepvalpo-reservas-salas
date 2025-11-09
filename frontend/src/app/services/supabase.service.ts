@@ -235,5 +235,35 @@ export class SupabaseService {
       .select();
   }
 
+  // Métodos para historial de reservas
+  async getHistorialReservas(filtros?: any) {
+    let query = this.supabase.from('vista_historial_completo').select('*');
+    
+    if (filtros?.usuario_id) {
+      query = query.eq('usuario_id', filtros.usuario_id);
+    }
+    if (filtros?.fecha_inicio) {
+      query = query.gte('fecha', filtros.fecha_inicio);
+    }
+    if (filtros?.fecha_fin) {
+      query = query.lte('fecha', filtros.fecha_fin);
+    }
+    if (filtros?.accion) {
+      query = query.eq('accion', filtros.accion);
+    }
+    
+    return await query.order('fecha_accion', { ascending: false });
+  }
+
+  async getHistorialReservaEspecifica(reservaId: string) {
+    return await this.supabase
+      .rpc('obtener_historial_reserva', { p_reserva_id: reservaId });
+  }
+
+  async getEstadisticasHistorial() {
+    return await this.supabase
+      .from('historial_reservas')
+      .select('accion');
+  }
 
 }

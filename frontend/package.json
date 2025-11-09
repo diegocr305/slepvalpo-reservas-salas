@@ -21,16 +21,17 @@
     "@angular/platform-browser": "^17.0.0",
     "@angular/platform-browser-dynamic": "^17.0.0",
     "@angular/router": "^17.0.0",
+    "@capacitor/camera": "^5.0.0",
+    "@capacitor/core": "^5.5.0",
     "@ionic/angular": "^7.5.0",
     "@supabase/supabase-js": "^2.38.0",
+    "date-fns": "^4.1.0",
     "ionicons": "^7.2.0",
-    "rxjs": "~7.8.0",
-    "tslib": "^2.3.0",
-    "zone.js": "~0.14.0",
     "qrcode": "^1.5.3",
     "qrcode-reader": "^1.0.4",
-    "@capacitor/core": "^5.5.0",
-    "@capacitor/camera": "^5.0.0"
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.14.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^17.0.0",
