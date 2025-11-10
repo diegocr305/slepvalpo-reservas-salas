@@ -1,6 +1,7 @@
--- Función para obtener todas las reservas de un día (bypassa RLS)
--- Permite a funcionarios ver todas las reservas sin restricciones
+-- Eliminar función existente y recrearla con zona horaria
+DROP FUNCTION IF EXISTS get_reservas_del_dia(date);
 
+-- Recrear función con zona horaria de Chile
 CREATE OR REPLACE FUNCTION get_reservas_del_dia(fecha_consulta DATE)
 RETURNS TABLE (
     id UUID,

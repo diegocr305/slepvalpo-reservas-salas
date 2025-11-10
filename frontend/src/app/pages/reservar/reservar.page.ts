@@ -316,7 +316,12 @@ export class ReservarPage implements OnInit, ViewWillEnter {
   }
 
   get fechaParaConsulta(): string {
-    return new Date(this.fechaSeleccionada).toISOString().split('T')[0];
+    const fecha = new Date(this.fechaSeleccionada);
+    // Usar la fecha local para evitar problemas de zona horaria
+    const year = fecha.getFullYear();
+    const month = String(fecha.getMonth() + 1).padStart(2, '0');
+    const day = String(fecha.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
 
@@ -548,6 +553,12 @@ export class ReservarPage implements OnInit, ViewWillEnter {
           proposito: this.proposito,
           responsable_id: this.responsableSeleccionado?.id
         };
+        
+        console.log('📅 Datos de reserva a enviar:', {
+          fechaSeleccionada: this.fechaSeleccionada,
+          fechaParaConsulta: this.fechaParaConsulta,
+          reservaData
+        });
         
         const { data, error } = await this.supabaseService.crearReserva(reservaData);
         

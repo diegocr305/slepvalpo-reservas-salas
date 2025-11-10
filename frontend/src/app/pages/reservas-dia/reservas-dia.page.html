@@ -6,7 +6,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="main-content">
   <!-- Refresher para actualizar -->
   <ion-refresher slot="fixed" (ionRefresh)="cargarReservas($event)">
     <ion-refresher-content></ion-refresher-content>
@@ -69,7 +69,7 @@
   <!-- Acordeones agrupados por sala -->
   <ion-accordion-group *ngIf="!cargando && reservas.length > 0" [multiple]="true">
     <ion-accordion *ngFor="let sala of salasConReservas" [value]="sala">
-      <ion-item slot="header" color="light">
+      <ion-item slot="header" class="accordion-header">
         <ion-icon name="business-outline" slot="start"></ion-icon>
         <ion-label>
           <h3>{{ sala }}</h3>
@@ -178,6 +178,15 @@
 .reserva-card-compacta {
   margin: 0;
   min-height: 180px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
+  border-left: 4px solid #1976d2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.reserva-card-compacta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .reserva-card-compacta ion-card-header {
@@ -217,6 +226,10 @@
 .reserva-info .proposito {
   font-style: italic;
   color: var(--ion-color-dark);
+  background: rgba(25, 118, 210, 0.1);
+  padding: 8px;
+  border-radius: 6px;
+  margin-top: 8px;
 }
 
 .reserva-badges {
@@ -235,7 +248,7 @@
 
 .accordion-content {
   padding: 16px;
-  background: var(--ion-color-light);
+  background: linear-gradient(135deg, #fafafa 0%, #f0f4f8 100%);
 }
 
 .accordion-content .reservas-grid {
@@ -276,5 +289,38 @@
 .modo-info div p {
   margin: 0;
   font-size: 0.9rem;
+}
+
+.main-content {
+  --background: linear-gradient(135deg, #fafafa 0%, #f5f7fa 100%);
+}
+
+.accordion-header {
+  --background: linear-gradient(135deg, #e8f4fd 0%, #f0f8ff 100%);
+  --border-color: rgba(25, 118, 210, 0.2);
+  border-left: 4px solid #1976d2;
+  margin-bottom: 2px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.accordion-header:hover {
+  --background: linear-gradient(135deg, #ddeeff 0%, #e8f4fd 100%);
+  transform: translateX(2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+ion-accordion-group {
+  margin: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+ion-accordion {
+  margin-bottom: 8px;
+  border-radius: 8px;
+  overflow: hidden;
 }
 </style>

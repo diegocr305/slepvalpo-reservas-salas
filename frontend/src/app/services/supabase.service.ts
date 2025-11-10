@@ -267,4 +267,36 @@ export class SupabaseService {
       .select('accion');
   }
 
+  // Obtener reservas del día usando RPC
+  async getReservasDelDia(fecha: string) {
+    console.log('🔍 Llamando RPC get_reservas_del_dia con fecha:', fecha);
+    
+    const { data, error } = await this.supabase
+      .rpc('get_reservas_del_dia', { fecha_consulta: fecha });
+    
+    console.log('📊 Resultado RPC:', { data, error });
+    console.log('📊 Número de reservas:', data?.length || 0);
+    
+    if (data && data.length > 0) {
+      console.log('📊 Primera reserva:', data[0]);
+    }
+    
+    return { data, error };
+  }
+
+  // Verificar reservas directamente en la tabla (para debugging)
+  async verificarReservasDirectas(fecha: string) {
+    console.log('🔍 Verificando reservas directamente en tabla para fecha:', fecha);
+    
+    const { data, error } = await this.supabase
+      .from('reservas')
+      .select('*')
+      .eq('fecha', fecha);
+    
+    console.log('📊 Reservas directas encontradas:', data?.length || 0);
+    console.log('📊 Datos directos:', data);
+    
+    return { data, error };
+  }
+
 }

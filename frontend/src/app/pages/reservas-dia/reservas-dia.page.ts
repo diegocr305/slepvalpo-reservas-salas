@@ -102,21 +102,36 @@ export class ReservasDiaPage implements OnInit, ViewWillEnter {
 
       let query;
       
-      if (usuario.rol === 'funcionario') {
-        console.log('🔒 Modo funcionario: consultando todas las reservas (solo lectura)');
-        // Funcionarios usan función RPC que bypassa RLS
-        const { data, error } = await this.supabaseService.supabase
-          .rpc('get_reservas_del_dia', { fecha_consulta: fechaConsulta });
+      // Usar el nuevo método del servicio para ambos roles
+      console.log(`🔧 Consultando reservas para rol: ${usuario.rol}`);
+      
+      // Primero verificar si hay reservas directamente en la tabla
+      await this.supabaseService.verificarReservasDirectas(fechaConsulta);
+      
+      const { data, error } = await this.supabaseService.getReservasDelDia(fechaConsulta);
+      
+      if (error) {
+        console.error('❌ Error en RPC:', error);
+        throw error;
+      }
+
+      console.log('📊 Reservas obtenidas:', data?.length || 0);
+      
+      if (data && data.length > 0) {
+        console.log('📊 Estructura de primera reserva:', data[0]);
+      }
+
+      // Mapear datos directamente
+      this.reservas = (data || []).map((reserva: any) => {
+        console.log('📊 Mapeando reserva:', {
+          id: reserva.id,
+          usuario_id: reserva.usuario_id,
+          usuario_nombre: reserva.usuario_nombre,
+          sala: reserva.sala_nombre,
+          horario: `${reserva.hora_inicio}-${reserva.hora_fin}`
+        });
         
-        if (error) {
-          console.error('❌ Error en RPC:', error);
-          throw error;
-        }
-
-        console.log('📊 Reservas obtenidas (RPC):', data?.length || 0);
-
-        // Mapear datos directamente
-        this.reservas = (data || []).map((reserva: any) => ({
+        return {
           id: reserva.id,
           fecha: reserva.fecha,
           hora_inicio: reserva.hora_inicio,
@@ -129,52 +144,20 @@ export class ReservasDiaPage implements OnInit, ViewWillEnter {
           usuario_area: reserva.usuario_area || 'Área no especificada',
           usuario_id: reserva.usuario_id,
           responsable_nombre: reserva.responsable_nombre
-        }));
-        
-      } else if (usuario.rol === 'admin' || usuario.rol === 'subdirector' || usuario.rol === 'super_admin') {
-        console.log('🔧 Modo admin/subdirector: consultando todas las reservas (con permisos)');
-        // Admin y subdirector también usan RPC para ver todas las reservas
-        const { data, error } = await this.supabaseService.supabase
-          .rpc('get_reservas_del_dia', { fecha_consulta: fechaConsulta });
-        
-        if (error) {
-          console.error('❌ Error en RPC:', error);
-          throw error;
-        }
+        };
+      });
 
-        console.log('📊 Reservas obtenidas (RPC Admin):', data?.length || 0);
-
-        // Mapear datos directamente
-        this.reservas = (data || []).map((reserva: any) => {
-          console.log('📊 Mapeando reserva:', {
-            id: reserva.id,
-            usuario_id: reserva.usuario_id,
-            usuario_nombre: reserva.usuario_nombre,
-            sala: reserva.sala_nombre,
-            horario: `${reserva.hora_inicio}-${reserva.hora_fin}`
-          });
-          
-          return {
-            id: reserva.id,
-            fecha: reserva.fecha,
-            hora_inicio: reserva.hora_inicio,
-            hora_fin: reserva.hora_fin,
-            proposito: reserva.proposito,
-            estado: reserva.estado,
-            sala_nombre: reserva.sala_nombre,
-            edificio_nombre: reserva.edificio_nombre,
-            usuario_nombre: reserva.usuario_nombre,
-            usuario_area: reserva.usuario_area || 'Área no especificada',
-            usuario_id: reserva.usuario_id,
-            responsable_nombre: reserva.responsable_nombre
-          };
-        });
-      }
-
-      this.totalReservas = this.reservas.length;
-      console.log('✅ Total de reservas cargadas:', this.totalReservas);
+      // Contar horas totales antes de agrupar
+      const totalHoras = this.reservas.length;
       
-      // Agrupar reservas por sala
+      // Agrupar reservas consecutivas primero
+      this.reservas = this.agruparReservasConsecutivas(this.reservas);
+      
+      // Actualizar contador con reservas agrupadas
+      this.totalReservas = this.reservas.length;
+      console.log(`📊 Resumen: ${totalHoras} horas → ${this.totalReservas} reservas agrupadas`);
+      
+      // Luego agrupar reservas por sala
       this.agruparReservasPorSala();
 
     } catch (error) {
@@ -389,5 +372,96 @@ export class ReservasDiaPage implements OnInit, ViewWillEnter {
       position: 'top'
     });
     toast.present();
+  }
+
+  /**
+   * Agrupa reservas consecutivas del mismo usuario, sala, propósito y responsable
+   */
+  private agruparReservasConsecutivas(reservas: ReservaDia[]): ReservaDia[] {
+    if (reservas.length === 0) return reservas;
+
+    console.log('🔗 Agrupando reservas consecutivas...');
+    
+    // Agrupar por usuario + sala + propósito + responsable
+    const grupos: { [key: string]: ReservaDia[] } = {};
+    
+    reservas.forEach(reserva => {
+      const key = `${reserva.usuario_id}-${reserva.sala_nombre}-${reserva.proposito}-${reserva.responsable_nombre || 'sin-responsable'}`;
+      if (!grupos[key]) {
+        grupos[key] = [];
+      }
+      grupos[key].push(reserva);
+    });
+
+    const reservasAgrupadas: ReservaDia[] = [];
+
+    Object.values(grupos).forEach(grupoReservas => {
+      if (grupoReservas.length === 1) {
+        // Solo una reserva, no agrupar
+        reservasAgrupadas.push(grupoReservas[0]);
+        return;
+      }
+
+      // Ordenar por hora de inicio
+      grupoReservas.sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio));
+
+      let bloqueActual: ReservaDia[] = [grupoReservas[0]];
+      
+      for (let i = 1; i < grupoReservas.length; i++) {
+        const reservaAnterior = bloqueActual[bloqueActual.length - 1];
+        const reservaActual = grupoReservas[i];
+        
+        // Verificar si son consecutivas (hora_fin anterior = hora_inicio actual)
+        if (reservaAnterior.hora_fin === reservaActual.hora_inicio) {
+          // Son consecutivas, agregar al bloque actual
+          bloqueActual.push(reservaActual);
+        } else {
+          // No son consecutivas, procesar bloque actual y empezar uno nuevo
+          if (bloqueActual.length > 1) {
+            // Crear reserva agrupada
+            const reservaAgrupada = this.crearReservaAgrupada(bloqueActual);
+            reservasAgrupadas.push(reservaAgrupada);
+          } else {
+            // Solo una reserva en el bloque
+            reservasAgrupadas.push(bloqueActual[0]);
+          }
+          
+          // Empezar nuevo bloque
+          bloqueActual = [reservaActual];
+        }
+      }
+      
+      // Procesar último bloque
+      if (bloqueActual.length > 1) {
+        const reservaAgrupada = this.crearReservaAgrupada(bloqueActual);
+        reservasAgrupadas.push(reservaAgrupada);
+      } else {
+        reservasAgrupadas.push(bloqueActual[0]);
+      }
+    });
+
+    // Ordenar resultado final por hora de inicio
+    reservasAgrupadas.sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio));
+    
+    console.log(`🔗 Agrupación completada: ${reservas.length} → ${reservasAgrupadas.length} reservas`);
+    
+    return reservasAgrupadas;
+  }
+
+  /**
+   * Crea una reserva agrupada combinando múltiples reservas consecutivas
+   */
+  private crearReservaAgrupada(reservas: ReservaDia[]): ReservaDia {
+    const primera = reservas[0];
+    const ultima = reservas[reservas.length - 1];
+    
+    console.log(`🔗 Agrupando ${reservas.length} reservas: ${primera.hora_inicio}-${ultima.hora_fin}`);
+    
+    return {
+      ...primera,
+      hora_fin: ultima.hora_fin, // Extender hasta la última hora
+      id: `agrupada-${primera.id}`, // ID especial para reservas agrupadas
+      proposito: primera.proposito + (reservas.length > 1 ? ` (${reservas.length} horas)` : '')
+    };
   }
 }

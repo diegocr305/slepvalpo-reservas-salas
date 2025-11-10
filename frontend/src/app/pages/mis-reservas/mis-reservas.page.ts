@@ -124,32 +124,42 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
 
         console.log('📊 Reservas obtenidas (RPC):', data?.length || 0);
 
-        // Mapear datos directamente
-        this.reservas = (data || []).map((reserva: any) => ({
-          id: reserva.id,
-          fecha: reserva.fecha,
-          hora_inicio: reserva.hora_inicio,
-          hora_fin: reserva.hora_fin,
-          proposito: reserva.proposito,
-          estado: reserva.estado,
-          sala_nombre: reserva.sala_nombre,
-          edificio_nombre: reserva.edificio_nombre,
-          usuario_nombre: reserva.usuario_nombre,
-          usuario_area: reserva.usuario_area || 'Área no especificada',
-          usuario_id: reserva.usuario_id,
-          responsable_nombre: reserva.responsable_nombre
-        }));
+        // Mapear datos directamente y filtrar solo MIS reservas
+        this.reservas = (data || [])
+          .filter((reserva: any) => reserva.usuario_id === usuario.id)
+          .map((reserva: any) => ({
+            id: reserva.id,
+            fecha: reserva.fecha,
+            hora_inicio: reserva.hora_inicio,
+            hora_fin: reserva.hora_fin,
+            proposito: reserva.proposito,
+            estado: reserva.estado,
+            sala_nombre: reserva.sala_nombre,
+            edificio_nombre: reserva.edificio_nombre,
+            usuario_nombre: reserva.usuario_nombre,
+            usuario_area: reserva.usuario_area || 'Área no especificada',
+            usuario_id: reserva.usuario_id,
+            responsable_nombre: reserva.responsable_nombre
+          }));
 
+        // Contar horas totales antes de agrupar
+        const totalHoras = this.reservas.length;
+        
         // Agrupar reservas consecutivas para funcionarios también
         this.reservas = this.agruparReservasConsecutivas(this.reservas);
         this.totalReservas = this.reservas.length;
         
+        console.log(`📊 Resumen funcionario: ${totalHoras} horas → ${this.totalReservas} reservas agrupadas`);
+        
         console.log('✅ Reservas procesadas y agrupadas (funcionario):', this.reservas.length);
+        
+        // Forzar detección de cambios
+        this.cdr.detectChanges();
         return; // Salir temprano para funcionarios
           
       } else if (usuario.rol === 'admin' || usuario.rol === 'subdirector') {
-        console.log('🔧 Modo admin/subdirector: consultando todas las reservas (con permisos)');
-        // Admin y subdirector ven todas las reservas del día (con permisos de edición)
+        console.log('🔧 Modo admin/subdirector: consultando solo MIS reservas');
+        // Admin y subdirector ven solo sus propias reservas
         query = this.supabaseService.supabase
           .from('reservas')
           .select(`
@@ -170,6 +180,7 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
             )
           `)
           .eq('fecha', fechaConsulta)
+          .eq('usuario_id', usuario.id)
           .eq('estado', 'confirmada')
           .order('hora_inicio', { ascending: true });
           
@@ -226,11 +237,19 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
         responsable_nombre: reserva.responsable_nombre
       }));
 
-      // Agrupar reservas consecutivas ANTES de contar
+      // Contar horas totales antes de agrupar
+      const totalHoras = this.reservas.length;
+      
+      // Agrupar reservas consecutivas ANTES de contar reservas
       this.reservas = this.agruparReservasConsecutivas(this.reservas);
       this.totalReservas = this.reservas.length;
       
+      console.log(`📊 Resumen: ${totalHoras} horas → ${this.totalReservas} reservas agrupadas`);
+      
       console.log('✅ Reservas procesadas y agrupadas:', this.reservas.length);
+      
+      // Forzar detección de cambios para actualizar el contador
+      this.cdr.detectChanges();
 
     } catch (error) {
       console.error('❌ Error cargando reservas:', error);
@@ -586,11 +605,11 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
 
     console.log('🔗 Agrupando reservas consecutivas...');
     
-    // Agrupar por usuario + sala + propósito
+    // Agrupar por usuario + sala + propósito + responsable
     const grupos: { [key: string]: ReservaCompleta[] } = {};
     
     reservas.forEach(reserva => {
-      const key = `${reserva.usuario_id}-${reserva.sala_nombre}-${reserva.proposito}`;
+      const key = `${reserva.usuario_id}-${reserva.sala_nombre}-${reserva.proposito}-${reserva.responsable_nombre || 'sin-responsable'}`;
       if (!grupos[key]) {
         grupos[key] = [];
       }
