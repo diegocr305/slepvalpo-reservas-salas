@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonButton, IonButtons, IonItem, IonLabel, IonTextarea, IonSegment, IonSegmentButton, IonIcon, IonModal, IonDatetime, IonSpinner, IonFab, IonFabButton, IonGrid, IonRow, IonCol, IonAlert, AlertController } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonButton, IonButtons, IonItem, IonLabel, IonTextarea, IonSegment, IonSegmentButton, IonIcon, IonModal, IonDatetime, IonSpinner, IonFab, IonFabButton, IonGrid, IonRow, IonCol, IonAlert, AlertController, ToastController } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
 import { AuthService } from '../../services/auth.service';
@@ -67,7 +67,8 @@ export class ReservarPage implements OnInit, ViewWillEnter {
     public authService: AuthService,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private toastController: ToastController
   ) {}
 
   async ngOnInit() {
@@ -634,10 +635,10 @@ export class ReservarPage implements OnInit, ViewWillEnter {
       await this.cargarDisponibilidad();
       
       console.log('Disponibilidad refrescada manualmente');
-      alert('Disponibilidad actualizada');
+      this.mostrarExito('Disponibilidad actualizada');
     } catch (error) {
       console.error('Error refrescando:', error);
-      alert('Error al refrescar');
+      this.mostrarError('Error al refrescar');
     } finally {
       this.cargando = false;
     }
@@ -682,6 +683,26 @@ export class ReservarPage implements OnInit, ViewWillEnter {
     return `Reserva confirmada de ${this.reservasExitosas} ${horas} para ${this.salaReservada} el ${this.fechaFormateada}`;
   }
 
+  private async mostrarError(mensaje: string) {
+    const toast = await this.toastController.create({
+      message: mensaje,
+      duration: 3000,
+      color: 'danger',
+      position: 'top'
+    });
+    toast.present();
+  }
+
+  private async mostrarExito(mensaje: string) {
+    const toast = await this.toastController.create({
+      message: mensaje,
+      duration: 3000,
+      color: 'success',
+      position: 'top'
+    });
+    toast.present();
+  }
+
   async cancelarReserva(horaInicio: string, horaFin: string, salaId: number) {
     console.log('=== CANCELANDO RESERVA ===');
     console.log('Buscando reserva con:');
@@ -705,7 +726,7 @@ export class ReservarPage implements OnInit, ViewWillEnter {
       console.log('Reserva encontrada:', reserva);
       
       if (!reserva) {
-        alert('❌ No se encontró la reserva a cancelar');
+        this.mostrarError('No se encontró la reserva a cancelar');
         return;
       }
       
@@ -719,12 +740,12 @@ export class ReservarPage implements OnInit, ViewWillEnter {
       
       if (error) {
         console.error('Error cancelando reserva:', error);
-        alert(`❌ Error al cancelar la reserva: ${error.message}`);
+        this.mostrarError(`Error al cancelar la reserva: ${error.message}`);
         return;
       }
       
       console.log('Reserva cancelada exitosamente');
-      alert('✅ Reserva cancelada exitosamente');
+      this.mostrarExito('Reserva cancelada exitosamente');
       
       // Esperar un momento antes de recargar para evitar problemas de cache
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -749,7 +770,7 @@ export class ReservarPage implements OnInit, ViewWillEnter {
       
     } catch (error) {
       console.error('Error:', error);
-      alert('❌ Error inesperado al cancelar la reserva');
+      this.mostrarError('Error inesperado al cancelar la reserva');
     } finally {
       this.cargando = false;
     }

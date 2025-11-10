@@ -575,6 +575,15 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
     return this.authService.user?.rol === 'funcionario';
   }
 
+  /**
+   * Formatea el horario sin segundos y agrega "hrs"
+   */
+  formatearHorario(horaInicio: string, horaFin: string): string {
+    const inicio = horaInicio.substring(0, 5); // Quitar :00
+    const fin = horaFin.substring(0, 5); // Quitar :00
+    return `${inicio} - ${fin} hrs`;
+  }
+
   // Métodos de utilidad
   private async mostrarError(mensaje: string) {
     const toast = await this.toastController.create({

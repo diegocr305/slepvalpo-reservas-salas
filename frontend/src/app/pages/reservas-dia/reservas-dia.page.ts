@@ -280,13 +280,51 @@ export class ReservasDiaPage implements OnInit, ViewWillEnter {
 
   private async confirmarCancelacion(reserva: ReservaDia) {
     try {
-      console.log('🗑️ Cancelando reserva:', reserva.id);
+      const esAgrupada = reserva.id.startsWith('agrupada-');
       
-      const { error } = await this.supabaseService.eliminarReserva(reserva.id);
-      
-      if (error) throw error;
-      
-      this.mostrarExito('Reserva cancelada exitosamente');
+      if (esAgrupada) {
+        console.log('🗑️ Cancelando reserva agrupada para:', reserva.usuario_nombre);
+        
+        // Para reservas agrupadas, necesitamos encontrar todas las reservas individuales
+        const fechaConsulta = format(this.fechaSeleccionada, 'yyyy-MM-dd');
+        
+        // Buscar todas las reservas del usuario en esa sala, horario, propósito y responsable
+        const { data: reservasIndividuales, error: errorBusqueda } = await this.supabaseService.supabase
+          .from('reservas')
+          .select('id')
+          .eq('fecha', fechaConsulta)
+          .eq('usuario_id', reserva.usuario_id)
+          .eq('proposito', reserva.proposito.replace(/ \(\d+ horas\)$/, '')) // Remover el sufijo de horas
+          .gte('hora_inicio', reserva.hora_inicio)
+          .lte('hora_fin', reserva.hora_fin)
+          .eq('estado', 'confirmada');
+          
+        if (errorBusqueda) throw errorBusqueda;
+        
+        console.log('📊 Reservas individuales encontradas:', reservasIndividuales?.length || 0);
+        
+        // Cancelar cada reserva individual
+        let canceladas = 0;
+        for (const reservaInd of reservasIndividuales || []) {
+          const { error } = await this.supabaseService.eliminarReserva(reservaInd.id);
+          if (error) {
+            console.error('Error cancelando reserva individual:', reservaInd.id, error);
+          } else {
+            canceladas++;
+          }
+        }
+        
+        this.mostrarExito(`${canceladas} reservas canceladas exitosamente`);
+        
+      } else {
+        console.log('🗑️ Cancelando reserva individual:', reserva.id);
+        
+        const { error } = await this.supabaseService.eliminarReserva(reserva.id);
+        
+        if (error) throw error;
+        
+        this.mostrarExito('Reserva cancelada exitosamente');
+      }
       
       // Recargar reservas para actualizar la vista
       await this.cargarReservas();
@@ -295,10 +333,6 @@ export class ReservasDiaPage implements OnInit, ViewWillEnter {
       this.cdr.detectChanges();
       
       console.log('✅ Cancelación completada');
-      
-      // Verificar que la reserva se eliminó
-      const reservaEliminada = this.reservas.find(r => r.id === reserva.id);
-      console.log('🔍 Reserva eliminada del array?', !reservaEliminada);
       
     } catch (error) {
       console.error('❌ Error cancelando reserva:', error);
@@ -313,6 +347,15 @@ export class ReservasDiaPage implements OnInit, ViewWillEnter {
 
   get modoSoloLectura(): boolean {
     return this.authService.user?.rol === 'funcionario';
+  }
+
+  /**
+   * Formatea el horario sin segundos y agrega "hrs"
+   */
+  formatearHorario(horaInicio: string, horaFin: string): string {
+    const inicio = horaInicio.substring(0, 5); // Quitar :00
+    const fin = horaFin.substring(0, 5); // Quitar :00
+    return `${inicio} - ${fin} hrs`;
   }
 
   // Agrupación por salas

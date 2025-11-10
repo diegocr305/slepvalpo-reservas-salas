@@ -71,7 +71,7 @@
     <ion-card *ngFor="let reserva of reservas" class="reserva-card-compacta">
       <ion-card-header>
         <ion-card-title>{{ reserva.sala_nombre }}</ion-card-title>
-        <ion-card-subtitle>{{ reserva.edificio_nombre }} • {{ reserva.hora_inicio }}-{{ reserva.hora_fin }}</ion-card-subtitle>
+        <ion-card-subtitle>{{ reserva.edificio_nombre }} • {{ formatearHorario(reserva.hora_inicio, reserva.hora_fin) }}</ion-card-subtitle>
       </ion-card-header>
 
       <ion-card-content>
