@@ -274,9 +274,10 @@ export class ReservarPage implements OnInit, ViewWillEnter {
             this.reservaACancelar.horaFin, 
             this.reservaACancelar.salaId
           ).then(() => {
+            // Solo recargar datos después de cancelar
             setTimeout(() => {
-              window.location.reload();
-            }, 1000);
+              this.recargarDatosSutil();
+            }, 800);
           });
         }
       }
@@ -639,6 +640,9 @@ export class ReservarPage implements OnInit, ViewWillEnter {
         this.cdr.detectChanges();
       }, 300);
       
+      // Asegurar que el loading esté en false antes del refresh
+      this.cargando = false;
+      
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -715,7 +719,8 @@ export class ReservarPage implements OnInit, ViewWillEnter {
       text: 'Aceptar', 
       role: 'cancel',
       handler: () => {
-        window.location.reload();
+        // Solo recargar datos, no refresh completo
+        this.recargarDatosSutil();
       }
     }];
   }
@@ -893,5 +898,43 @@ export class ReservarPage implements OnInit, ViewWillEnter {
     }
     
     return null;
+  }
+
+  /**
+   * Recarga solo los datos sin refresh completo de página
+   */
+  private async recargarDatosSutil() {
+    console.log('🔄 Recargando datos sutilmente...');
+    
+    try {
+      // Mostrar loading brevemente
+      this.cargando = true;
+      
+      // Limpiar datos actuales
+      this.reservasDelDia = [];
+      this.disponibilidad = {};
+      
+      // Recargar salas y disponibilidad
+      await this.cargarSalas();
+      await this.cargarDisponibilidad();
+      
+      // Forzar re-filtrado
+      this.filtrarSalasPorEdificio();
+      
+      // Múltiples detecciones de cambios
+      this.cdr.detectChanges();
+      
+      setTimeout(() => {
+        this.cdr.detectChanges();
+      }, 100);
+      
+      console.log('✅ Datos recargados exitosamente');
+      
+    } catch (error) {
+      console.error('❌ Error recargando datos:', error);
+    } finally {
+      this.cargando = false;
+      this.cdr.detectChanges();
+    }
   }
 }
