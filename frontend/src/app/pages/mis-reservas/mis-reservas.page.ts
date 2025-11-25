@@ -1,17 +1,20 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { 
   IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, 
   IonCardHeader, IonCardTitle, IonCardSubtitle, IonButton, IonIcon, IonChip, IonLabel, 
   IonSpinner, IonList, IonItem, IonRefresher, IonRefresherContent, IonAlert, IonAvatar,
+  IonSegment, IonSegmentButton, IonSelect, IonSelectOption, IonSearchbar,
   AlertController, ActionSheetController, ToastController 
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
   chevronBackOutline, chevronForwardOutline, calendarOutline, timeOutline, 
   businessOutline, personOutline, documentTextOutline, createOutline, 
-  trashOutline, eyeOutline, closeCircle 
+  trashOutline, eyeOutline, closeCircle, searchOutline, todayOutline,
+  calendarClearOutline 
 } from 'ionicons/icons';
 import { format, addDays, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -40,18 +43,26 @@ interface ReservaCompleta {
   styleUrls: ['./mis-reservas.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, IonContent, IonHeader, IonTitle, IonToolbar, IonCard, 
+    CommonModule, FormsModule, IonContent, IonHeader, IonTitle, IonToolbar, IonCard, 
     IonCardContent, IonCardHeader, IonCardTitle, IonCardSubtitle, IonButton, IonIcon, 
     IonChip, IonLabel, IonSpinner, IonList, IonItem, IonRefresher, 
-    IonRefresherContent, IonAlert, IonAvatar
+    IonRefresherContent, IonAlert, IonAvatar, IonSegment, IonSegmentButton, 
+    IonSelect, IonSelectOption, IonSearchbar
   ]
 })
 export class MisReservasPage implements OnInit, ViewWillEnter {
   // Estado de la página
   fechaSeleccionada: Date = new Date();
   reservas: ReservaCompleta[] = [];
+  reservasFiltradas: ReservaCompleta[] = [];
+  gruposReservas: any[] = [];
   cargando = false;
   totalReservas = 0;
+  
+  // Filtros
+  rangoFechaSeleccionado = 'hoy';
+  edificioFiltro = 'todos';
+  textoBusqueda = '';
   
   // Edición con chips
   mostrandoEdicion = false;
@@ -70,7 +81,8 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
     addIcons({ 
       chevronBackOutline, chevronForwardOutline, calendarOutline, timeOutline, 
       businessOutline, personOutline, documentTextOutline, createOutline, 
-      trashOutline, eyeOutline, closeCircle 
+      trashOutline, eyeOutline, closeCircle, searchOutline, todayOutline,
+      calendarClearOutline 
     });
   }
 
@@ -104,141 +116,89 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
 
       console.log('👤 Usuario detectado:', usuario.email, 'Rol:', usuario.rol);
 
-      // Obtener fecha en formato YYYY-MM-DD
-      const fechaConsulta = format(this.fechaSeleccionada, 'yyyy-MM-dd');
-      console.log('🔍 Consultando reservas para fecha:', fechaConsulta);
+      // Calcular rango de fechas según filtro
+      const { fechaInicio, fechaFin } = this.calcularRangoFechas();
+      console.log('🔍 Consultando reservas desde:', fechaInicio, 'hasta:', fechaFin);
 
-      // Consulta según el rol del usuario
-      let query;
+      // Para rangos amplios, usar consulta directa en lugar de RPC
+      let allData, error;
       
-      if (usuario.rol === 'funcionario') {
-        console.log('🔒 Modo funcionario: consultando todas las reservas (solo lectura)');
-        // Funcionarios usan función RPC que bypassa RLS
-        const { data, error } = await this.supabaseService.supabase
-          .rpc('get_reservas_del_dia', { fecha_consulta: fechaConsulta });
-        
-        if (error) {
-          console.error('❌ Error en RPC:', error);
-          throw error;
-        }
-
-        console.log('📊 Reservas obtenidas (RPC):', data?.length || 0);
-
-        // Mapear datos directamente y filtrar solo MIS reservas
-        this.reservas = (data || [])
-          .filter((reserva: any) => reserva.usuario_id === usuario.id)
-          .map((reserva: any) => ({
-            id: reserva.id,
-            fecha: reserva.fecha,
-            hora_inicio: reserva.hora_inicio,
-            hora_fin: reserva.hora_fin,
-            proposito: reserva.proposito,
-            estado: reserva.estado,
-            sala_nombre: reserva.sala_nombre,
-            edificio_nombre: reserva.edificio_nombre,
-            usuario_nombre: reserva.usuario_nombre,
-            usuario_area: reserva.usuario_area || 'Área no especificada',
-            usuario_id: reserva.usuario_id,
-            responsable_nombre: reserva.responsable_nombre
-          }));
-
-        // Contar horas totales antes de agrupar
-        const totalHoras = this.reservas.length;
-        
-        // Agrupar reservas consecutivas para funcionarios también
-        this.reservas = this.agruparReservasConsecutivas(this.reservas);
-        this.totalReservas = this.reservas.length;
-        
-        console.log(`📊 Resumen funcionario: ${totalHoras} horas → ${this.totalReservas} reservas agrupadas`);
-        
-        console.log('✅ Reservas procesadas y agrupadas (funcionario):', this.reservas.length);
-        
-        // Forzar detección de cambios
-        this.cdr.detectChanges();
-        return; // Salir temprano para funcionarios
-          
-      } else if (usuario.rol === 'admin' || usuario.rol === 'subdirector') {
-        console.log('🔧 Modo admin/subdirector: consultando solo MIS reservas');
-        // Admin y subdirector ven solo sus propias reservas
-        query = this.supabaseService.supabase
-          .from('reservas')
-          .select(`
-            id,
-            fecha,
-            hora_inicio,
-            hora_fin,
-            proposito,
-            estado,
-            usuario_id,
-            salas!inner(
-              nombre,
-              edificios!inner(nombre)
-            ),
-            usuarios!reservas_usuario_id_fkey(
-              nombre_completo,
-              area
-            )
-          `)
-          .eq('fecha', fechaConsulta)
-          .eq('usuario_id', usuario.id)
-          .eq('estado', 'confirmada')
-          .order('hora_inicio', { ascending: true });
-          
+      if (this.rangoFechaSeleccionado === 'hoy') {
+        // Solo para "hoy" usar RPC
+        const result = await this.supabaseService.getReservasDelDia(fechaInicio);
+        allData = result.data;
+        error = result.error;
       } else {
-        console.log('❓ Rol no reconocido, usando consulta por defecto');
-        // Fallback: solo sus propias reservas
-        query = this.supabaseService.supabase
+        // Para rangos amplios, consulta directa
+        const result = await this.supabaseService.supabase
           .from('reservas')
           .select(`
-            id,
-            fecha,
-            hora_inicio,
-            hora_fin,
-            proposito,
-            estado,
-            usuario_id,
-            salas!inner(
-              nombre,
-              edificios!inner(nombre)
-            ),
-            usuarios!reservas_usuario_id_fkey(
-              nombre_completo,
-              area
-            )
+            id, fecha, hora_inicio, hora_fin, proposito, estado, usuario_id,
+            salas!inner(nombre, edificios!inner(nombre)),
+            usuarios!reservas_usuario_id_fkey(nombre_completo, area),
+            responsable:usuarios!responsable_id(nombre_completo)
           `)
-          .eq('fecha', fechaConsulta)
-          .eq('usuario_id', usuario.id)
+          .gte('fecha', fechaInicio)
+          .lte('fecha', fechaFin)
           .eq('estado', 'confirmada')
-          .order('hora_inicio', { ascending: true });
+          .order('fecha')
+          .order('hora_inicio');
+          
+        // Mapear a estructura RPC
+        allData = (result.data || []).map((reserva: any) => ({
+          id: reserva.id,
+          fecha: reserva.fecha,
+          hora_inicio: reserva.hora_inicio,
+          hora_fin: reserva.hora_fin,
+          proposito: reserva.proposito,
+          estado: reserva.estado,
+          sala_nombre: reserva.salas?.nombre,
+          edificio_nombre: reserva.salas?.edificios?.nombre,
+          usuario_nombre: reserva.usuarios?.nombre_completo,
+          usuario_area: reserva.usuarios?.area,
+          usuario_id: reserva.usuario_id,
+          responsable_nombre: reserva.responsable?.nombre_completo
+        }));
+        error = result.error;
       }
-
-      const { data, error } = await query;
-
+      
       if (error) {
-        console.error('❌ Error en consulta:', error);
+        console.error('❌ Error en RPC:', error);
         throw error;
       }
 
-      console.log('📊 Reservas obtenidas:', data?.length || 0);
+      console.log('📊 Reservas obtenidas:', allData?.length || 0);
+      console.log('🔍 Rango usado:', { fechaInicio, fechaFin, filtro: this.rangoFechaSeleccionado });
 
-      // Mapear datos a la interfaz
-      this.reservas = (data || []).map((reserva: any) => ({
+      // Filtrar solo MIS reservas para todos los roles
+      const misReservas = (allData || []).filter((reserva: any) => reserva.usuario_id === usuario.id);
+      
+      // Mapear datos usando estructura RPC (igual que reservas-dia)
+      this.reservas = misReservas.map((reserva: any) => ({
         id: reserva.id,
         fecha: reserva.fecha,
         hora_inicio: reserva.hora_inicio,
         hora_fin: reserva.hora_fin,
         proposito: reserva.proposito,
         estado: reserva.estado,
-        sala_nombre: reserva.salas?.nombre || 'Sala no encontrada',
-        edificio_nombre: reserva.salas?.edificios?.nombre || 'Edificio no encontrado',
-        usuario_nombre: reserva.usuarios?.nombre_completo || 'Usuario no encontrado',
-        usuario_area: reserva.usuarios?.area || 'Área no especificada',
+        sala_nombre: reserva.sala_nombre,
+        edificio_nombre: reserva.edificio_nombre,
+        usuario_nombre: reserva.usuario_nombre,
+        usuario_area: reserva.usuario_area || 'Área no especificada',
         usuario_id: reserva.usuario_id,
         responsable_nombre: reserva.responsable_nombre
       }));
 
       // Contar horas totales antes de agrupar
       const totalHoras = this.reservas.length;
+      
+      // Debug: verificar datos del responsable
+      console.log('🔍 Debug reservas antes de agrupar:', this.reservas.map(r => ({
+        id: r.id,
+        sala: r.sala_nombre,
+        responsable: r.responsable_nombre,
+        proposito: r.proposito
+      })));
       
       // Agrupar reservas consecutivas ANTES de contar reservas
       this.reservas = this.agruparReservasConsecutivas(this.reservas);
@@ -248,6 +208,9 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
       
       console.log('✅ Reservas procesadas y agrupadas:', this.reservas.length);
       
+      // Aplicar filtros y agrupar
+      this.aplicarFiltros();
+      
       // Forzar detección de cambios para actualizar el contador
       this.cdr.detectChanges();
 
@@ -255,6 +218,8 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
       console.error('❌ Error cargando reservas:', error);
       this.mostrarError('Error al cargar las reservas');
       this.reservas = [];
+      this.reservasFiltradas = [];
+      this.gruposReservas = [];
       this.totalReservas = 0;
     } finally {
       this.cargando = false;
@@ -582,6 +547,172 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
     const inicio = horaInicio.substring(0, 5); // Quitar :00
     const fin = horaFin.substring(0, 5); // Quitar :00
     return `${inicio} - ${fin} hrs`;
+  }
+  
+  formatearFecha(fecha: string): string {
+    return format(new Date(fecha), "d 'de' MMM", { locale: es });
+  }
+  
+  aplicarFiltroFecha() {
+    // Recargar reservas con nuevo rango
+    this.cargarReservas();
+  }
+  
+  aplicarFiltros() {
+    // Ya no necesitamos filtrar por fecha aquí porque se carga desde BD
+    let reservasFiltradas = [...this.reservas];
+    
+    // Filtro por edificio
+    if (this.edificioFiltro !== 'todos') {
+      const nombreEdificio = this.edificioFiltro === '1' ? 'Blanco' : 'Cochrane';
+      reservasFiltradas = reservasFiltradas.filter(r => 
+        r.edificio_nombre === nombreEdificio
+      );
+    }
+    
+    // Filtro por texto de búsqueda
+    if (this.textoBusqueda.trim()) {
+      const texto = this.textoBusqueda.toLowerCase();
+      reservasFiltradas = reservasFiltradas.filter(r => 
+        r.proposito?.toLowerCase().includes(texto) ||
+        r.responsable_nombre?.toLowerCase().includes(texto) ||
+        r.sala_nombre.toLowerCase().includes(texto)
+      );
+    }
+    
+    this.reservasFiltradas = reservasFiltradas;
+    this.agruparReservas();
+  }
+  
+  private agruparReservas() {
+    const grupos: any[] = [];
+    const hoy = new Date();
+    const mañana = new Date(hoy);
+    mañana.setDate(hoy.getDate() + 1);
+    
+    // Agrupar por fecha
+    const reservasPorFecha = new Map<string, ReservaCompleta[]>();
+    
+    this.reservasFiltradas.forEach(reserva => {
+      // Asegurar que la fecha sea string en formato YYYY-MM-DD
+      const fecha = typeof reserva.fecha === 'string' ? reserva.fecha : format(new Date(reserva.fecha), 'yyyy-MM-dd');
+      if (!reservasPorFecha.has(fecha)) {
+        reservasPorFecha.set(fecha, []);
+      }
+      reservasPorFecha.get(fecha)!.push(reserva);
+    });
+    
+    // Crear grupos ordenados
+    const fechasOrdenadas = Array.from(reservasPorFecha.keys()).sort();
+    
+    fechasOrdenadas.forEach(fecha => {
+      const reservasFecha = reservasPorFecha.get(fecha)!;
+      // Crear fecha correctamente desde string YYYY-MM-DD
+      const fechaObj = new Date(fecha + 'T00:00:00');
+      
+      let titulo = '';
+      let icono = 'calendar-outline';
+      
+      const fechaReservaStr = format(fechaObj, 'yyyy-MM-dd');
+      const fechaHoyStr = format(hoy, 'yyyy-MM-dd');
+      const fechaMañanaStr = format(mañana, 'yyyy-MM-dd');
+      
+      console.log('Debug fechas:', {
+        fechaReserva: fechaReservaStr,
+        fechaHoy: fechaHoyStr,
+        fechaMañana: fechaMañanaStr,
+        esHoy: fechaReservaStr === fechaHoyStr
+      });
+      
+      if (fechaReservaStr === fechaHoyStr) {
+        titulo = 'HOY';
+        icono = 'today-outline';
+      } else if (fechaReservaStr === fechaMañanaStr) {
+        titulo = 'MAÑANA';
+        icono = 'calendar-clear-outline';
+      } else {
+        titulo = format(fechaObj, "EEEE d 'de' MMMM", { locale: es }).toUpperCase();
+      }
+      
+      // Agrupar por edificio
+      const edificios = [
+        { nombre: 'Edificio Blanco', reservas: [] as ReservaCompleta[] },
+        { nombre: 'Edificio Cochrane', reservas: [] as ReservaCompleta[] }
+      ];
+      
+      reservasFecha.forEach(reserva => {
+        if (reserva.edificio_nombre === 'Blanco') {
+          edificios[0].reservas.push(reserva);
+        } else if (reserva.edificio_nombre === 'Cochrane') {
+          edificios[1].reservas.push(reserva);
+        }
+      });
+      
+      grupos.push({
+        titulo,
+        icono,
+        total: reservasFecha.length,
+        edificios
+      });
+    });
+    
+    this.gruposReservas = grupos;
+  }
+  
+  private calcularRangoFechas(): { fechaInicio: string, fechaFin: string } {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    
+    switch (this.rangoFechaSeleccionado) {
+      case 'hoy':
+        const fechaHoy = format(hoy, 'yyyy-MM-dd');
+        return { fechaInicio: fechaHoy, fechaFin: fechaHoy };
+        
+      case 'semana':
+        const diaActual = hoy.getDay();
+        const diasHastaLunes = diaActual === 0 ? 6 : diaActual - 1;
+        
+        const inicioSemana = new Date(hoy);
+        inicioSemana.setDate(hoy.getDate() - diasHastaLunes);
+        
+        const finSemana = new Date(inicioSemana);
+        finSemana.setDate(inicioSemana.getDate() + 6);
+        
+        return {
+          fechaInicio: format(inicioSemana, 'yyyy-MM-dd'),
+          fechaFin: format(finSemana, 'yyyy-MM-dd')
+        };
+        
+      case 'mes':
+        const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+        const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+        
+        console.log('Debug mes:', {
+          inicioMes: format(inicioMes, 'yyyy-MM-dd'),
+          finMes: format(finMes, 'yyyy-MM-dd')
+        });
+        
+        return {
+          fechaInicio: format(inicioMes, 'yyyy-MM-dd'),
+          fechaFin: format(finMes, 'yyyy-MM-dd')
+        };
+        
+      case 'todos':
+      default:
+        // Últimos 6 meses hasta próximos 6 meses para mayor rango
+        const inicio = new Date(hoy.getFullYear(), hoy.getMonth() - 6, 1);
+        const fin = new Date(hoy.getFullYear(), hoy.getMonth() + 6, 0);
+        
+        console.log('Debug todos:', {
+          inicio: format(inicio, 'yyyy-MM-dd'),
+          fin: format(fin, 'yyyy-MM-dd')
+        });
+        
+        return {
+          fechaInicio: format(inicio, 'yyyy-MM-dd'),
+          fechaFin: format(fin, 'yyyy-MM-dd')
+        };
+    }
   }
 
   // Métodos de utilidad

@@ -211,7 +211,14 @@ export class SupabaseService {
     
     let query = this.supabase
       .from('reservas')
-      .select('*')
+      .select(`
+        *,
+        responsable:usuarios!responsable_id(
+          id,
+          nombre_completo,
+          email
+        )
+      `)
       .eq('fecha', fecha)
       .eq('estado', 'confirmada');
     

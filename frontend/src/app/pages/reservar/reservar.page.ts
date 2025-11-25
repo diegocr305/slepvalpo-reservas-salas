@@ -49,6 +49,15 @@ export class ReservarPage implements OnInit, ViewWillEnter {
   responsableSeleccionado: any = null;
   mostrarCalendario = false;
   cargando = false;
+  
+  // Tooltip y modal para información de reservas
+  tooltipVisible = false;
+  tooltipX = 0;
+  tooltipY = 0;
+  tooltipData: any = null;
+  mostrarModalReserva = false;
+  modalData: any = null;
+  esMobile = false;
 
   // Datos de la base de datos
   edificios: any[] = [];
@@ -76,6 +85,10 @@ export class ReservarPage implements OnInit, ViewWillEnter {
     console.log('Fecha inicial:', this.fechaSeleccionada);
     console.log('Fecha mínima:', this.fechaMinima);
     console.log('Usuario al iniciar:', this.supabaseService.user);
+    
+    // Detectar si es móvil (mejorado)
+    this.detectarDispositivo();
+    window.addEventListener('resize', () => this.detectarDispositivo());
     
     this.cargando = true;
     
@@ -260,7 +273,11 @@ export class ReservarPage implements OnInit, ViewWillEnter {
             this.reservaACancelar.horaInicio, 
             this.reservaACancelar.horaFin, 
             this.reservaACancelar.salaId
-          );
+          ).then(() => {
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          });
         }
       }
     }
@@ -444,16 +461,25 @@ export class ReservarPage implements OnInit, ViewWillEnter {
     const estado = this.getEstadoHorario(salaId, index);
     console.log('Estado del horario:', estado);
     
-    // Si es ocupado por otro, no hacer nada
+    // Si es ocupado por otro
     if (estado === 'ocupado') {
-      console.log('❌ Horario ocupado por otro usuario, no se puede hacer nada');
+      if (this.esMobile) {
+        console.log('📱 Móvil: Mostrando modal para reserva ocupada');
+        this.mostrarInfoReserva(salaId, index);
+      }
       return;
     }
     
-    // Si es mi reserva, mostrar opción de cancelar
+    // Si es mi reserva
     if (estado === 'mi-reserva') {
-      console.log('🟡 Es mi reserva, mostrando opciones de cancelación');
-      this.mostrarOpcionesCancelacion(horario, salaId);
+      console.log('🟡 Es mi reserva');
+      if (this.esMobile) {
+        console.log('📱 Móvil: Mostrando modal para mi reserva');
+        this.mostrarInfoReserva(salaId, index);
+      } else {
+        console.log('🖥️ Desktop: Mostrando opciones de cancelación');
+        this.mostrarOpcionesCancelacion(horario, salaId);
+      }
       return;
     }
 
@@ -605,6 +631,7 @@ export class ReservarPage implements OnInit, ViewWillEnter {
       
       // Múltiples detecciones de cambios
       this.cdr.detectChanges();
+      
       setTimeout(() => {
         this.cdr.detectChanges();
       }, 100);
@@ -683,6 +710,16 @@ export class ReservarPage implements OnInit, ViewWillEnter {
     return `Reserva confirmada de ${this.reservasExitosas} ${horas} para ${this.salaReservada} el ${this.fechaFormateada}`;
   }
 
+  get successAlertButtons() {
+    return [{
+      text: 'Aceptar', 
+      role: 'cancel',
+      handler: () => {
+        window.location.reload();
+      }
+    }];
+  }
+
   private async mostrarError(mensaje: string) {
     const toast = await this.toastController.create({
       message: mensaje,
@@ -703,7 +740,7 @@ export class ReservarPage implements OnInit, ViewWillEnter {
     toast.present();
   }
 
-  async cancelarReserva(horaInicio: string, horaFin: string, salaId: number) {
+  async cancelarReserva(horaInicio: string, horaFin: string, salaId: number): Promise<void> {
     console.log('=== CANCELANDO RESERVA ===');
     console.log('Buscando reserva con:');
     console.log('- sala_id:', salaId);
@@ -774,5 +811,87 @@ export class ReservarPage implements OnInit, ViewWillEnter {
     } finally {
       this.cargando = false;
     }
+  }
+
+  private detectarDispositivo() {
+    this.esMobile = window.innerWidth <= 768 || 'ontouchstart' in window;
+    console.log('Dispositivo detectado como móvil:', this.esMobile);
+  }
+
+  mostrarTooltip(event: MouseEvent, salaId: number, index: number) {
+    const estado = this.getEstadoHorario(salaId, index);
+    
+    // Mostrar tooltip si está ocupado o es mi reserva, y no es móvil
+    if ((estado === 'ocupado' || estado === 'mi-reserva') && !this.esMobile) {
+      const reservaInfo = this.getReservaInfo(salaId, index);
+      if (reservaInfo) {
+        const target = event.target as HTMLElement;
+        
+        this.tooltipData = reservaInfo;
+        this.tooltipX = target.offsetLeft + (target.offsetWidth / 2);
+        this.tooltipY = target.offsetTop + (target.offsetHeight / 2);
+        this.tooltipVisible = true;
+        
+        console.log('Tooltip posición:', {
+          x: this.tooltipX,
+          y: this.tooltipY,
+          offsetLeft: target.offsetLeft,
+          offsetTop: target.offsetTop,
+          width: target.offsetWidth,
+          height: target.offsetHeight
+        });
+      }
+    }
+  }
+
+  ocultarTooltip() {
+    this.tooltipVisible = false;
+    this.tooltipData = null;
+    this.tooltipX = 0;
+    this.tooltipY = 0;
+  }
+
+  mostrarInfoReserva(salaId: number, index: number) {
+    const reservaInfo = this.getReservaInfo(salaId, index);
+    if (reservaInfo) {
+      const horario = this.horarios[index];
+      const salaNombre = this.getSalaNombre(salaId);
+      
+      this.modalData = {
+        ...reservaInfo,
+        fecha: this.fechaFormateada,
+        horario: horario,
+        sala: salaNombre
+      };
+      this.mostrarModalReserva = true;
+    }
+  }
+
+  cerrarModalReserva() {
+    this.mostrarModalReserva = false;
+    this.modalData = null;
+  }
+
+  private getReservaInfo(salaId: number, index: number) {
+    const horario = this.horarios[index];
+    const [horaInicio, horaFin] = horario.split('-');
+    
+    const reserva = this.reservasDelDia.find(r => 
+      r.sala_id === salaId && 
+      r.hora_inicio === horaInicio + ':00' && 
+      r.hora_fin === horaFin + ':00' &&
+      r.estado === 'confirmada'
+    );
+    
+    console.log('Reserva encontrada para tooltip:', reserva);
+    
+    if (reserva) {
+      return {
+        responsable: reserva.responsable?.nombre_completo || 'No especificado',
+        motivo: reserva.proposito || 'Sin motivo especificado'
+      };
+    }
+    
+    return null;
   }
 }

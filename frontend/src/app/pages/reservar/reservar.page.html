@@ -108,7 +108,6 @@
       <div *ngFor="let sala of salas" class="sala-row">
         <div class="sala-info">
           <div class="sala-nombre">{{sala.nombre}}</div>
-          <div class="sala-capacidad">{{sala.capacidad}} personas</div>
         </div>
         
         <div class="horarios-grid">
@@ -120,6 +119,8 @@
             [class.mi-reserva]="getEstadoHorario(sala.id, i) === 'mi-reserva'"
             [class.selected]="salaSeleccionada === sala.id && isHorarioSeleccionado(horario)"
             (click)="toggleHorario(horario, sala.id, i)"
+            (mouseenter)="mostrarTooltip($event, sala.id, i)"
+            (mouseleave)="ocultarTooltip()"
             id="horario-slot-{{sala.id}}-{{i}}">
           </div>
         </div>
@@ -211,7 +212,7 @@
     class="custom-alert"
     header="Reserva exitosa"
     [message]="successAlertMessage"
-    [buttons]="[{text: 'Aceptar', role: 'cancel'}]">
+    [buttons]="successAlertButtons">
   </ion-alert>
 
   <!-- Alert de error -->
@@ -222,5 +223,89 @@
     message="Por favor completa todos los campos: propósito y responsable son obligatorios"
     [buttons]="[{text: 'Aceptar', role: 'cancel'}]">
   </ion-alert>
+
+  <!-- Tooltip para información de reserva -->
+  <div 
+    id="reserva-tooltip" 
+    class="reserva-tooltip" 
+    [style.display]="tooltipVisible ? 'block' : 'none'"
+    [style.left.px]="tooltipX"
+    [style.top.px]="tooltipY">
+    <div class="tooltip-content">
+      <div class="tooltip-responsable">{{tooltipData?.responsable}}</div>
+      <div class="tooltip-motivo">{{tooltipData?.motivo}}</div>
+    </div>
+  </div>
+
+  <!-- Modal para móviles -->
+  <ion-modal 
+    [isOpen]="mostrarModalReserva" 
+    (willDismiss)="cerrarModalReserva()"
+    (didDismiss)="cerrarModalReserva()"
+    [canDismiss]="true"
+    [showBackdrop]="true"
+    [backdropDismiss]="true">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>Información de Reserva</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="cerrarModalReserva()" fill="clear">
+              <ion-icon name="close" size="large"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <div class="modal-reserva-info">
+          <ion-card>
+            <ion-card-content>
+              <ion-item lines="none">
+                <ion-icon name="calendar" slot="start" color="tertiary"></ion-icon>
+                <ion-label>
+                  <h3>Fecha</h3>
+                  <p>{{modalData?.fecha}}</p>
+                </ion-label>
+              </ion-item>
+              
+              <ion-item lines="none">
+                <ion-icon name="time" slot="start" color="warning"></ion-icon>
+                <ion-label>
+                  <h3>Horario</h3>
+                  <p>{{modalData?.horario}} - {{modalData?.sala}}</p>
+                </ion-label>
+              </ion-item>
+              
+              <ion-item lines="none">
+                <ion-icon name="person-circle" slot="start" color="primary"></ion-icon>
+                <ion-label>
+                  <h3>Responsable</h3>
+                  <p>{{modalData?.responsable}}</p>
+                </ion-label>
+              </ion-item>
+              
+              <ion-item lines="none">
+                <ion-icon name="document-text" slot="start" color="secondary"></ion-icon>
+                <ion-label>
+                  <h3>Motivo</h3>
+                  <p>{{modalData?.motivo}}</p>
+                </ion-label>
+              </ion-item>
+            </ion-card-content>
+          </ion-card>
+          
+          <ion-button 
+            expand="block" 
+            fill="outline" 
+            color="medium"
+            (click)="cerrarModalReserva()"
+            class="close-button">
+            <ion-icon name="close-circle" slot="start"></ion-icon>
+            Cerrar
+          </ion-button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 
 </ion-content>

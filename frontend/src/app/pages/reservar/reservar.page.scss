@@ -242,6 +242,28 @@
 .horario-slot:hover:not(.ocupado) {
   opacity: 0.8;
   transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+// Mejorar interacción táctil en móviles
+@media (max-width: 768px) {
+  .horario-slot {
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .horario-slot.ocupado,
+  .horario-slot.mi-reserva {
+    cursor: pointer;
+  }
+  
+  .horario-slot:active {
+    transform: scale(0.95);
+    transition: transform 0.1s;
+  }
 }
 
 .leyenda {
@@ -489,4 +511,113 @@ button.alert-button.alert-button-confirm {
 .ios button.alert-button.alert-button-confirm {
   border-bottom-right-radius: 13px;
   border-top-right-radius: 13px;
+}
+
+// Tooltip para información de reserva
+.reserva-tooltip {
+  position: absolute;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  max-width: 280px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+  transform: translateX(-50%) translateY(-50%);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 8px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.8);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  }
+  
+  &[style*="display: block"] {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-50%);
+  }
+}
+
+.tooltip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tooltip-responsable {
+  font-weight: 600;
+  color: #64b5f6;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  
+  &::before {
+    content: '👤';
+    font-size: 0.9rem;
+  }
+}
+
+.tooltip-motivo {
+  font-size: 0.85rem;
+  color: #e0e0e0;
+  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  
+  &::before {
+    content: '📋';
+    font-size: 0.8rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+}
+
+// Modal para móviles
+.modal-reserva-info {
+  margin-top: 20px;
+}
+
+.modal-reserva-info ion-card {
+  margin: 0 0 20px 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.modal-reserva-info ion-item {
+  --background: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
+  margin-bottom: 16px;
+}
+
+.modal-reserva-info h3 {
+  color: #3880ff;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+}
+
+.modal-reserva-info p {
+  margin: 0;
+  color: #333;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.close-button {
+  margin-top: 20px;
+  --border-width: 2px;
+  font-weight: 500;
 }
