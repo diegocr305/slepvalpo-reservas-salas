@@ -118,24 +118,40 @@
 
 
 .edificio-selector {
-  padding: 8px 16px;
+  padding: 14px 16px;
   background: white;
   border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: center;
 }
 
 .edificio-selector ion-segment {
-  --background: #f8f9fa;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --background: #edf0f5;
+  border-radius: 10px;
+  padding: 4px;
+  max-width: 520px;
+  width: 100%;
+  gap: 4px;
 }
 
 .edificio-selector ion-segment-button {
-  --color: #666;
+  --color: #25306b;
   --color-checked: #ffffff;
-  --background-checked: var(--ion-color-primary);
-  --border-radius: 6px;
-  font-weight: 500;
-  margin: 2px;
+  --background-checked: #25306b;
+  --indicator-color: transparent;
+  --border-radius: 8px;
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+  min-height: 44px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.2px;
+  text-transform: none;
+  transition: all 0.2s ease;
+}
+
+.edificio-selector ion-segment-button.segment-button-checked {
+  box-shadow: 0 2px 8px rgba(37, 48, 107, 0.3);
 }
 
 .seccion-titulo {

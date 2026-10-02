@@ -43,7 +43,7 @@
           </ion-button>
         </div>
 
-        <ion-modal [isOpen]="mostrarSelectorFecha" (willDismiss)="mostrarSelectorFecha = false">
+        <ion-modal [isOpen]="mostrarSelectorFecha" (willDismiss)="mostrarSelectorFecha = false" class="modal-calendario">
           <ng-template>
             <ion-header>
               <ion-toolbar>
@@ -461,12 +461,50 @@
 .filtros-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+}
+
+/* Segmento de rango de fechas: estilo pill institucional */
+.filtros-container ion-segment {
+  --background: #edf0f5;
+  border-radius: 10px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.filtros-container ion-segment-button {
+  --color: #25306b;
+  --color-checked: #ffffff;
+  --background-checked: #25306b;
+  --indicator-color: transparent;
+  --border-radius: 8px;
+  min-height: 40px;
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-transform: none;
+  letter-spacing: 0.2px;
+}
+
+.filtros-container ion-segment-button.segment-button-checked {
+  box-shadow: 0 2px 6px rgba(37, 48, 107, 0.25);
 }
 
 .fecha-especifica-bar {
   display: flex;
   justify-content: center;
+}
+
+/* Calendario dentro del modal: asegurar que se vea completo */
+.modal-calendario {
+  --width: 360px;
+  --height: 520px;
+  --border-radius: 16px;
+}
+
+.modal-calendario ion-datetime {
+  --background: #ffffff;
+  width: 100%;
+  max-width: 340px;
 }
 
 .filtros-secundarios {

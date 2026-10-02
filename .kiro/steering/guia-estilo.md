@@ -215,6 +215,10 @@ sin sufijo = estable de producción.
     anchas, 1 columna en móvil). Colores de la grilla de Reservar homologados a la paleta SLEP
     (verde `#3AB54A`, rojo `#FF1D3D`, amarillo `#F7C500`, azul `#006BB9`) y azul Ionic viejo
     `#3880ff` eliminado. Topbar con media queries (oculta email/área y texto "Salir" en móvil).
+  - `1.5.0`: segmentos (selector de edificio en Reservar y filtro de rango en Mis Reservas)
+    rediseñados como pills institucionales (seleccionado azul `#25306B` + sombra, resto con
+    texto azul sobre fondo gris). Modal del calendario de Mis Reservas con alto fijo para que
+    el `ion-datetime` se vea completo. Filtros más compactos.
 
 ### Comandos para subir versión
 ```
