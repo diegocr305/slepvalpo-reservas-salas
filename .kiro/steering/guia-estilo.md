@@ -219,6 +219,11 @@ sin sufijo = estable de producción.
     rediseñados como pills institucionales (seleccionado azul `#25306B` + sombra, resto con
     texto azul sobre fondo gris). Modal del calendario de Mis Reservas con alto fijo para que
     el `ion-datetime` se vea completo. Filtros más compactos.
+  - `1.5.1`: fixes. (1) Calendario de Mis Reservas: números de día eran blancos sobre blanco,
+    forzados a azul institucional legible. (2) Flip de la grilla: ya no expande la celda
+    (causaba distorsión y scrollbar); ahora el detalle aparece como panel flotante de tamaño
+    fijo que no altera el layout. (3) Iniciales corregidas: usan primer nombre + primer
+    apellido (ej. "Lionel Nolberto Claro" -> "LC", antes daba "LN").
 
 ### Comandos para subir versión
 ```

@@ -237,51 +237,57 @@
   position: relative;
 }
 
-// ===== Flip de bloques con reserva (muestra iniciales del responsable) =====
+// ===== Panel de bloques con reserva (iniciales en frente, detalle flotante en hover) =====
 .slot-flip {
   position: absolute;
   inset: 0;
-  perspective: 600px;
 }
 
-.slot-cara {
+// Frente: iniciales siempre visibles, centradas, sin alterar la celda
+.slot-frente {
   position: absolute;
   inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slot-iniciales-mini {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 0.5px;
+}
+
+// Reverso: panel flotante oculto que aparece en hover (ver regla :hover)
+.slot-reverso {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  width: 150px;
+  min-height: 54px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  backface-visibility: hidden;
-  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.slot-frente {
-  transform: rotateY(0deg);
-}
-
-// Iniciales siempre visibles en el frente (pista discreta)
-.slot-iniciales-mini {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
-  letter-spacing: 0.5px;
-}
-
-.slot-reverso {
-  transform: rotateY(180deg);
+  gap: 2px;
   background: #25306b;
   color: #ffffff;
-  padding: 2px 4px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(37, 48, 107, 0.4);
   text-align: center;
-  gap: 1px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 70;
 }
 
 .slot-nombre {
-  font-size: 0.6rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -289,10 +295,10 @@
 }
 
 .slot-motivo {
-  font-size: 0.55rem;
+  font-size: 0.62rem;
   font-weight: 400;
   color: #c7cde8;
-  line-height: 1.1;
+  line-height: 1.2;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -301,29 +307,16 @@
   max-width: 100%;
 }
 
-// Al pasar el mouse: el bloque se agranda y gira para mostrar los datos
-.horario-slot.con-reserva {
-  z-index: 1;
-}
-
+// Al pasar el mouse sobre un bloque con reserva: aparece un panel flotante
+// centrado con los datos. NO expande la celda (no causa scroll ni distorsión).
 .horario-slot.con-reserva:hover {
-  z-index: 50;
-}
-
-.horario-slot.con-reserva:hover .slot-flip {
-  position: absolute;
-  inset: -10px -8px;
-  min-height: 70px;
-  box-shadow: 0 6px 20px rgba(37, 48, 107, 0.35);
-  border-radius: 6px;
-}
-
-.horario-slot.con-reserva:hover .slot-frente {
-  transform: rotateY(180deg);
+  z-index: 60;
 }
 
 .horario-slot.con-reserva:hover .slot-reverso {
-  transform: rotateY(360deg);
+  opacity: 1;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .horario-slot.disponible {

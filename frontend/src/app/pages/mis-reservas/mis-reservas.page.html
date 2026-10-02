@@ -503,8 +503,31 @@
 
 .modal-calendario ion-datetime {
   --background: #ffffff;
+  --ion-text-color: #25306b;
+  --ion-text-color-rgb: 37, 48, 107;
+  color: #25306b;
   width: 100%;
   max-width: 340px;
+}
+
+/* Forzar que los números de los días sean legibles (azul sobre blanco) */
+.modal-calendario ion-datetime::part(calendar-day) {
+  color: #25306b;
+}
+
+.modal-calendario ion-datetime::part(calendar-day today) {
+  color: #006bb9;
+  font-weight: 700;
+}
+
+.modal-calendario ion-datetime::part(calendar-day active),
+.modal-calendario ion-datetime::part(calendar-day):focus {
+  color: #ffffff;
+  background: #25306b;
+}
+
+.modal-calendario ion-datetime::part(calendar-day disabled) {
+  color: #c0c4cc;
 }
 
 .filtros-secundarios {

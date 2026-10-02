@@ -910,9 +910,16 @@ export class ReservarPage implements OnInit, ViewWillEnter {
       return '•';
     }
     const partes = info.responsable.trim().split(/\s+/);
-    const primera = partes[0]?.charAt(0) || '';
-    const segunda = partes.length > 1 ? partes[1].charAt(0) : '';
-    return (primera + segunda).toUpperCase();
+    // Inicial del primer NOMBRE y del primer APELLIDO (consistente con getNombreCortoReserva).
+    // Ej: "Lionel Nolberto Claro López" -> primer nombre "Lionel" (L) + primer apellido "Claro" (C) = "LC".
+    const inicialNombre = partes[0]?.charAt(0) || '';
+    let inicialApellido = '';
+    if (partes.length === 2) {
+      inicialApellido = partes[1].charAt(0); // nombre + apellido
+    } else if (partes.length > 2) {
+      inicialApellido = partes[partes.length - 2].charAt(0); // penúltima = primer apellido
+    }
+    return (inicialNombre + inicialApellido).toUpperCase();
   }
 
   /**
