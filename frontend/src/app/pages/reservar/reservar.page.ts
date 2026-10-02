@@ -901,6 +901,21 @@ export class ReservarPage implements OnInit, ViewWillEnter {
   }
 
   /**
+   * Devuelve las iniciales del responsable de una reserva, para mostrar
+   * en el reverso del bloque cuando hace flip (ej. "Lionel Claro" -> "LC").
+   */
+  getInicialesReserva(salaId: number, index: number): string {
+    const info = this.getReservaInfo(salaId, index);
+    if (!info || !info.responsable || info.responsable === 'No especificado') {
+      return '•';
+    }
+    const partes = info.responsable.trim().split(/\s+/);
+    const primera = partes[0]?.charAt(0) || '';
+    const segunda = partes.length > 1 ? partes[1].charAt(0) : '';
+    return (primera + segunda).toUpperCase();
+  }
+
+  /**
    * Recarga solo los datos sin refresh completo de página
    */
   private async recargarDatosSutil() {

@@ -118,10 +118,18 @@
             [class.ocupado]="getEstadoHorario(sala.id, i) === 'ocupado'"
             [class.mi-reserva]="getEstadoHorario(sala.id, i) === 'mi-reserva'"
             [class.selected]="salaSeleccionada === sala.id && isHorarioSeleccionado(horario)"
+            [class.con-reserva]="getEstadoHorario(sala.id, i) === 'ocupado' || getEstadoHorario(sala.id, i) === 'mi-reserva'"
             (click)="toggleHorario(horario, sala.id, i)"
             (mouseenter)="mostrarTooltip($event, sala.id, i)"
             (mouseleave)="ocultarTooltip()"
             id="horario-slot-{{sala.id}}-{{i}}">
+            <!-- Flip: reverso con iniciales del responsable (solo bloques con reserva) -->
+            <div class="slot-flip" *ngIf="getEstadoHorario(sala.id, i) === 'ocupado' || getEstadoHorario(sala.id, i) === 'mi-reserva'">
+              <div class="slot-cara slot-frente"></div>
+              <div class="slot-cara slot-reverso">
+                <span class="slot-iniciales">{{ getInicialesReserva(sala.id, i) }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

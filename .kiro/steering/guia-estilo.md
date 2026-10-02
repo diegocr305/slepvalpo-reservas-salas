@@ -198,9 +198,13 @@ con sufijos de pre-lanzamiento cuando aplica. Referencia: https://semver.org/lan
 sin sufijo = estable de producción.
 
 ### Estado actual
-- **`1.1.0`** (estable, en producción). Justificación: el sistema ya estaba operativo en
-  `1.0.0`; esta versión agrega funcionalidad compatible (login institucional homologado con
-  RGM 2027, guía de estilo, paleta SLEP, cambio de salas Guayaquil→Bandurrias).
+- **`1.2.0`** (estable, en producción). Historial reciente:
+  - `1.1.0`: login institucional homologado con RGM 2027, guía de estilo, paleta SLEP,
+    cambio de salas Guayaquil→Bandurrias.
+  - `1.2.0`: mejoras UX — homologación de colores (morado→azul institucional) en Mis
+    Reservas, mejor distribución de tarjetas (sin espacio en blanco), búsqueda por fecha
+    específica en Mis Reservas, y flip de bloques con reserva en la grilla de Reservar
+    (muestra iniciales del responsable, reemplaza el tooltip negro flotante).
 
 ### Comandos para subir versión
 ```
@@ -227,6 +231,11 @@ inferior `#1d2650` que incluye copyright + versión.
 las pantallas (reservar, calendario, mis reservas) se vean igual, conviene extraerlos a
 componentes Angular reutilizables (ej. `AppFooterComponent`, `AppHeaderComponent`) y usarlos en
 el layout común. Mientras no se haga, replicar los mismos colores y estructura descritos aquí.
+
+> PENDIENTE acordado con el dueño: crear ese header/footer institucional compartido (footer de
+> 4 columnas + franja inferior con versión, como el login y RGM 2027) y usarlo en las páginas
+> internas. Estado parcial en v1.2.0: ya se homologaron los COLORES de las páginas internas
+> (se quitó el degradado morado en Mis Reservas); falta el componente compartido.
 
 Decisiones de contenido del footer (heredadas de RGM, confirmar con el dueño si cambian):
 - NO logo Mineduc, NO redes sociales, NO párrafo descriptivo largo.

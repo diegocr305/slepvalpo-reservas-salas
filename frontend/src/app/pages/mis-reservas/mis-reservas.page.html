@@ -30,7 +30,41 @@
           <ion-segment-button value="todos">
             <ion-label>Todas</ion-label>
           </ion-segment-button>
+          <ion-segment-button value="fecha">
+            <ion-label>Fecha</ion-label>
+          </ion-segment-button>
         </ion-segment>
+
+        <!-- Selector de fecha específica (visible solo con filtro "Fecha") -->
+        <div class="fecha-especifica-bar" *ngIf="rangoFechaSeleccionado === 'fecha'">
+          <ion-button fill="outline" size="small" color="secondary" (click)="mostrarSelectorFecha = true">
+            <ion-icon name="calendar-outline" slot="start"></ion-icon>
+            {{ fechaEspecificaLabel }}
+          </ion-button>
+        </div>
+
+        <ion-modal [isOpen]="mostrarSelectorFecha" (willDismiss)="mostrarSelectorFecha = false">
+          <ng-template>
+            <ion-header>
+              <ion-toolbar>
+                <ion-title>Elegir fecha</ion-title>
+                <ion-buttons slot="end">
+                  <ion-button (click)="mostrarSelectorFecha = false">Cerrar</ion-button>
+                </ion-buttons>
+              </ion-toolbar>
+            </ion-header>
+            <ion-content class="ion-padding" style="display:flex; flex-direction:column; align-items:center;">
+              <ion-datetime
+                [(ngModel)]="fechaEspecifica"
+                presentation="date"
+                style="max-width: 350px; width: 100%;">
+              </ion-datetime>
+              <ion-button expand="block" color="primary" (click)="confirmarFechaEspecifica()" style="max-width:350px; width:100%; margin-top:12px;">
+                Buscar reservas de esta fecha
+              </ion-button>
+            </ion-content>
+          </ng-template>
+        </ion-modal>
         
         <!-- Filtros adicionales -->
         <div class="filtros-secundarios">
@@ -271,10 +305,10 @@
 
 .reserva-card-compacta {
   margin: 0;
-  min-height: 180px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: #ffffff;
   border-left: 4px solid var(--ion-color-primary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(37, 48, 107, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -424,6 +458,11 @@
   gap: 16px;
 }
 
+.fecha-especifica-bar {
+  display: flex;
+  justify-content: center;
+}
+
 .filtros-secundarios {
   display: flex;
   gap: 12px;
@@ -455,6 +494,8 @@
 /* Estilos para agrupación */
 .reservas-agrupadas {
   padding: 0 16px;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 .grupo-fecha {
@@ -463,28 +504,27 @@
 
 .header-grupo {
   margin: 0 0 16px 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 16px;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-  border-left: 6px solid #4f46e5;
+  background: #25306b;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(37, 48, 107, 0.2);
+  border-left: 6px solid #ff1d3d;
 }
 
 .titulo-grupo {
   display: flex;
   align-items: center;
-  gap: 16px;
-  font-size: 1.1rem;
+  gap: 12px;
+  font-size: 1rem;
   margin: 0;
-  padding: 20px;
+  padding: 12px 16px;
 }
 
 .icono-grupo {
-  font-size: 2.5rem;
+  font-size: 1.5rem;
   color: white;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 8px;
   border-radius: 50%;
-  backdrop-filter: blur(10px);
 }
 
 .texto-grupo {
@@ -493,15 +533,14 @@
 
 .titulo-fecha {
   color: white;
-  font-size: 1.4rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  margin: 0 0 4px 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  margin: 0;
 }
 
 .contador-reservas {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
   margin: 0;
   font-weight: 500;
 }
@@ -518,9 +557,15 @@
 
 .reservas-edificio {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   margin-left: 16px;
+}
+
+@media (max-width: 820px) {
+  .reservas-edificio {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {

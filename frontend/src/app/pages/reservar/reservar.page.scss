@@ -221,6 +221,49 @@
   position: relative;
 }
 
+// ===== Flip de bloques con reserva (muestra iniciales del responsable) =====
+.slot-flip {
+  position: absolute;
+  inset: 0;
+  perspective: 600px;
+}
+
+.slot-cara {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 2px;
+}
+
+.slot-frente {
+  transform: rotateY(0deg);
+}
+
+.slot-reverso {
+  transform: rotateY(180deg);
+  background: #25306b;
+  color: #ffffff;
+}
+
+.slot-iniciales {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+// Al pasar el mouse sobre un bloque con reserva, gira
+.horario-slot.con-reserva:hover .slot-frente {
+  transform: rotateY(180deg);
+}
+
+.horario-slot.con-reserva:hover .slot-reverso {
+  transform: rotateY(360deg);
+}
+
 .horario-slot.disponible {
   background-color: #28a745;
 }
@@ -514,7 +557,9 @@ button.alert-button.alert-button-confirm {
 }
 
 // Tooltip para información de reserva
+// Reemplazado por el flip de bloques: se oculta el tooltip negro flotante.
 .reserva-tooltip {
+  display: none !important;
   position: absolute;
   z-index: 10000;
   background: rgba(0, 0, 0, 0.8);

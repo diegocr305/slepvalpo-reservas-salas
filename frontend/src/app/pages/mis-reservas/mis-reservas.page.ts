@@ -7,8 +7,10 @@ import {
   IonCardHeader, IonCardTitle, IonCardSubtitle, IonButton, IonIcon, IonChip, IonLabel, 
   IonSpinner, IonList, IonItem, IonRefresher, IonRefresherContent, IonAlert, IonAvatar,
   IonSegment, IonSegmentButton, IonSelect, IonSelectOption, IonSearchbar,
+  IonModal, IonButtons,
   AlertController, ActionSheetController, ToastController 
 } from '@ionic/angular/standalone';
+import { IonDatetime } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
   chevronBackOutline, chevronForwardOutline, calendarOutline, timeOutline, 
@@ -47,7 +49,7 @@ interface ReservaCompleta {
     IonCardContent, IonCardHeader, IonCardTitle, IonCardSubtitle, IonButton, IonIcon, 
     IonChip, IonLabel, IonSpinner, IonList, IonItem, IonRefresher, 
     IonRefresherContent, IonAlert, IonAvatar, IonSegment, IonSegmentButton, 
-    IonSelect, IonSelectOption, IonSearchbar
+    IonSelect, IonSelectOption, IonSearchbar, IonModal, IonButtons, IonDatetime
   ]
 })
 export class MisReservasPage implements OnInit, ViewWillEnter {
@@ -63,6 +65,9 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
   rangoFechaSeleccionado = 'hoy';
   edificioFiltro = 'todos';
   textoBusqueda = '';
+  // Búsqueda por fecha específica
+  fechaEspecifica: string = new Date().toISOString();
+  mostrarSelectorFecha = false;
   
   // Edición con chips
   mostrandoEdicion = false;
@@ -125,6 +130,11 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
       
       if (this.rangoFechaSeleccionado === 'hoy') {
         // Solo para "hoy" usar RPC
+        const result = await this.supabaseService.getReservasDelDia(fechaInicio);
+        allData = result.data;
+        error = result.error;
+      } else if (this.rangoFechaSeleccionado === 'fecha') {
+        // Fecha específica: usar el RPC del día con la fecha elegida
         const result = await this.supabaseService.getReservasDelDia(fechaInicio);
         allData = result.data;
         error = result.error;
@@ -554,8 +564,23 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
   }
   
   aplicarFiltroFecha() {
-    // Recargar reservas con nuevo rango
+    // Si el usuario elige "Fecha", abrir el selector; si no, recargar directo
+    if (this.rangoFechaSeleccionado === 'fecha') {
+      this.mostrarSelectorFecha = true;
+      return;
+    }
     this.cargarReservas();
+  }
+
+  /** Confirma la fecha específica elegida y recarga */
+  confirmarFechaEspecifica() {
+    this.mostrarSelectorFecha = false;
+    this.cargarReservas();
+  }
+
+  /** Etiqueta legible de la fecha específica para mostrar en el botón */
+  get fechaEspecificaLabel(): string {
+    return format(new Date(this.fechaEspecifica), "d 'de' MMM yyyy", { locale: es });
   }
   
   aplicarFiltros() {
@@ -664,6 +689,11 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
     hoy.setHours(0, 0, 0, 0);
     
     switch (this.rangoFechaSeleccionado) {
+      case 'fecha':
+        // Búsqueda por una fecha específica elegida por el usuario
+        const fechaElegida = format(new Date(this.fechaEspecifica), 'yyyy-MM-dd');
+        return { fechaInicio: fechaElegida, fechaFin: fechaElegida };
+
       case 'hoy':
         const fechaHoy = format(hoy, 'yyyy-MM-dd');
         return { fechaInicio: fechaHoy, fechaFin: fechaHoy };
