@@ -224,6 +224,10 @@ sin sufijo = estable de producción.
     (causaba distorsión y scrollbar); ahora el detalle aparece como panel flotante de tamaño
     fijo que no altera el layout. (3) Iniciales corregidas: usan primer nombre + primer
     apellido (ej. "Lionel Nolberto Claro" -> "LC", antes daba "LN").
+  - `1.6.0`: filtros de Mis Reservas simplificados a **Hoy / Fecha / Todas** (se quitaron
+    "Esta Semana" y "Este Mes" por bajo uso). El título del grupo refleja correctamente el
+    filtro: "HOY" para hoy, la fecha real al elegir una fecha específica, y agrupado por fecha
+    en "Todas".
 
 ### Comandos para subir versión
 ```

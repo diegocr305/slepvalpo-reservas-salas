@@ -698,35 +698,6 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
         const fechaHoy = format(hoy, 'yyyy-MM-dd');
         return { fechaInicio: fechaHoy, fechaFin: fechaHoy };
         
-      case 'semana':
-        const diaActual = hoy.getDay();
-        const diasHastaLunes = diaActual === 0 ? 6 : diaActual - 1;
-        
-        const inicioSemana = new Date(hoy);
-        inicioSemana.setDate(hoy.getDate() - diasHastaLunes);
-        
-        const finSemana = new Date(inicioSemana);
-        finSemana.setDate(inicioSemana.getDate() + 6);
-        
-        return {
-          fechaInicio: format(inicioSemana, 'yyyy-MM-dd'),
-          fechaFin: format(finSemana, 'yyyy-MM-dd')
-        };
-        
-      case 'mes':
-        const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-        const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
-        
-        console.log('Debug mes:', {
-          inicioMes: format(inicioMes, 'yyyy-MM-dd'),
-          finMes: format(finMes, 'yyyy-MM-dd')
-        });
-        
-        return {
-          fechaInicio: format(inicioMes, 'yyyy-MM-dd'),
-          fechaFin: format(finMes, 'yyyy-MM-dd')
-        };
-        
       case 'todos':
       default:
         // Últimos 6 meses hasta próximos 6 meses para mayor rango
