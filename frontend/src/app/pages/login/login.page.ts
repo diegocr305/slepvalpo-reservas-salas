@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonButton, IonIcon, IonText, IonSpinner } from '@ionic/angular/standalone';
+import { IonContent, IonSpinner } from '@ionic/angular/standalone';
 import { SupabaseService } from '../../services/supabase.service';
 import { CommonModule } from '@angular/common';
 
@@ -8,10 +8,11 @@ import { CommonModule } from '@angular/common';
   selector: 'app-login',
   templateUrl: './login.page.html',
   standalone: true,
-  imports: [CommonModule, IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonButton, IonIcon, IonText, IonSpinner]
+  imports: [CommonModule, IonContent, IonSpinner]
 })
 export class LoginPage implements OnInit {
   loading = false;
+  anioActual = new Date().getFullYear();
 
   constructor(
     private supabaseService: SupabaseService,
