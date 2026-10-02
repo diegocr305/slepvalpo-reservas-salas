@@ -64,10 +64,17 @@ INSERT INTO edificios (nombre, direccion) VALUES
 
 INSERT INTO salas (nombre, edificio_id, capacidad) VALUES 
 ('Principal', 1, 20),
-('Guayaquil', 1, 15),
 ('San Antonio', 1, 12),
 ('Principal', 2, 25),
 ('Secundaria', 2, 10);
+
+-- Sala Bandurrias (reemplaza a Guayaquil como sala de reuniones). Sin capacidad definida por ahora.
+INSERT INTO salas (nombre, edificio_id) VALUES 
+('Bandurrias', 1);
+
+-- Sala Guayaquil: queda inactiva (oculta) pero se conserva por historial. Reactivar con activa = true si se requiere.
+INSERT INTO salas (nombre, edificio_id, capacidad, activa) VALUES 
+('Guayaquil', 1, 15, false);
 
 -- Índices para optimización
 CREATE INDEX idx_reservas_fecha ON reservas(fecha);

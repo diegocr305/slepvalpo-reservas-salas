@@ -13,7 +13,7 @@ Sistema web para la reserva de salas de reunión en los edificios Blanco y Cochr
 
 ### Edificio Blanco
 - Sala Principal
-- Sala Guayaquil  
+- Sala Bandurrias  
 - Sala San Antonio
 
 ### Edificio Cochrane

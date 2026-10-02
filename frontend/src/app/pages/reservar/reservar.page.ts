@@ -208,7 +208,7 @@ export class ReservarPage implements OnInit, ViewWillEnter {
         // Usar datos de respaldo si falla
         this.todasLasSalas = [
           { id: 1, nombre: 'Principal', edificio_id: 1, capacidad: 20 },
-          { id: 2, nombre: 'Guayaquil', edificio_id: 1, capacidad: 15 },
+          { id: 2, nombre: 'Bandurrias', edificio_id: 1 },
           { id: 3, nombre: 'San Antonio', edificio_id: 1, capacidad: 12 },
           { id: 4, nombre: 'Principal', edificio_id: 2, capacidad: 25 },
           { id: 5, nombre: 'Secundaria', edificio_id: 2, capacidad: 10 }
@@ -234,7 +234,7 @@ export class ReservarPage implements OnInit, ViewWillEnter {
       // Usar datos de respaldo
       this.todasLasSalas = [
         { id: 1, nombre: 'Principal', edificio_id: 1, capacidad: 20 },
-        { id: 2, nombre: 'Guayaquil', edificio_id: 1, capacidad: 15 },
+        { id: 2, nombre: 'Bandurrias', edificio_id: 1 },
         { id: 3, nombre: 'San Antonio', edificio_id: 1, capacidad: 12 },
         { id: 4, nombre: 'Principal', edificio_id: 2, capacidad: 25 },
         { id: 5, nombre: 'Secundaria', edificio_id: 2, capacidad: 10 }

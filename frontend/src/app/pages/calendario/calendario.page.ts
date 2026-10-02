@@ -17,7 +17,7 @@ export class CalendarioPage implements OnInit {
   cargando = false;
   salas: any[] = [
     { id: 1, nombre: 'Principal', capacidad: 20, edificio: { nombre: 'Edificio Blanco' } },
-    { id: 2, nombre: 'Guayaquil', capacidad: 15, edificio: { nombre: 'Edificio Blanco' } },
+    { id: 2, nombre: 'Bandurrias', edificio: { nombre: 'Edificio Blanco' } },
     { id: 3, nombre: 'San Antonio', capacidad: 10, edificio: { nombre: 'Edificio Blanco' } },
     { id: 4, nombre: 'Principal', capacidad: 25, edificio: { nombre: 'Edificio Cochrane' } },
     { id: 5, nombre: 'Secundaria', capacidad: 12, edificio: { nombre: 'Edificio Cochrane' } }
