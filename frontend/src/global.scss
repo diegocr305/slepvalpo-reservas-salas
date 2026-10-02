@@ -30,28 +30,38 @@ ion-datetime {
   --background: #ffffff;
   --background-rgb: 255, 255, 255;
   --title-color: #25306b;
+  /* Clave: el texto de los días hereda --ion-text-color; forzarlo a azul */
+  --ion-text-color: #25306b;
+  --ion-text-color-rgb: 37, 48, 107;
   color: #25306b;
+}
+
+/* El modal que contiene el calendario tambien debe tener el texto en azul,
+   porque ion-datetime hereda --ion-text-color del contexto del modal. */
+ion-modal.modal-calendario {
+  --ion-text-color: #25306b;
+  --ion-text-color-rgb: 37, 48, 107;
 }
 
 /* Números de los días: azul institucional sobre blanco */
 ion-datetime::part(calendar-day) {
-  color: #25306b;
+  color: #25306b !important;
 }
 
 /* Día de hoy destacado en celeste */
 ion-datetime::part(calendar-day today) {
-  color: #006bb9;
+  color: #006bb9 !important;
   font-weight: 700;
 }
 
 /* Día seleccionado/activo: fondo azul, texto blanco */
 ion-datetime::part(calendar-day active),
 ion-datetime::part(calendar-day active):focus {
-  color: #ffffff;
-  background: #25306b;
+  color: #ffffff !important;
+  background: #25306b !important;
 }
 
 /* Días deshabilitados (relleno de otros meses) atenuados */
 ion-datetime::part(calendar-day disabled) {
-  color: #c0c4cc;
+  color: #c0c4cc !important;
 }
