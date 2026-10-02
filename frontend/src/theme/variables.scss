@@ -1,39 +1,69 @@
+/*
+ * Paleta institucional SLEP Valparaíso / Gobierno de Chile
+ * ----------------------------------------------------------------------------
+ * Mapeo de la identidad visual oficial a las variables de color de Ionic.
+ * Documentación completa de uso en: .kiro/steering/guia-estilo.md
+ *
+ * Colores base:
+ *   Azul institucional (primario) #25306B
+ *   Azul oscuro (franja footer)   #1d2650
+ *   Celeste (acento Gobierno)     #006BB9
+ *   Rojo (acento Gobierno)        #FF1D3D
+ *   Verde (éxito)                 #3AB54A
+ *   Amarillo (advertencia)        #F7C500
+ *   Gris de fondo                 #EDF0F5
+ */
+
 :root {
-  --ion-color-primary: #1976d2;
-  --ion-color-primary-rgb: 25, 118, 210;
+  /* Primario — Azul institucional #25306B */
+  --ion-color-primary: #25306b;
+  --ion-color-primary-rgb: 37, 48, 107;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #1565c0;
-  --ion-color-primary-tint: #2196f3;
+  --ion-color-primary-shade: #202a5e;
+  --ion-color-primary-tint: #3b457a;
 
-  --ion-color-secondary: #3dc2ff;
-  --ion-color-secondary-rgb: 61, 194, 255;
+  /* Secundario — Celeste acento Gobierno #006BB9 */
+  --ion-color-secondary: #006bb9;
+  --ion-color-secondary-rgb: 0, 107, 185;
   --ion-color-secondary-contrast: #ffffff;
   --ion-color-secondary-contrast-rgb: 255, 255, 255;
-  --ion-color-secondary-shade: #36abe0;
-  --ion-color-secondary-tint: #50c8ff;
+  --ion-color-secondary-shade: #005ea3;
+  --ion-color-secondary-tint: #1a7ac0;
 
-  --ion-color-success: #2dd36f;
-  --ion-color-success-rgb: 45, 211, 111;
+  /* Terciario — Azul oscuro franja inferior #1d2650 */
+  --ion-color-tertiary: #1d2650;
+  --ion-color-tertiary-rgb: 29, 38, 80;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #1a2146;
+  --ion-color-tertiary-tint: #343c62;
+
+  /* Éxito — Verde #3AB54A */
+  --ion-color-success: #3ab54a;
+  --ion-color-success-rgb: 58, 181, 74;
   --ion-color-success-contrast: #ffffff;
   --ion-color-success-contrast-rgb: 255, 255, 255;
-  --ion-color-success-shade: #28ba62;
-  --ion-color-success-tint: #42d77d;
+  --ion-color-success-shade: #339f41;
+  --ion-color-success-tint: #4ebc5c;
 
-  --ion-color-warning: #ffc409;
-  --ion-color-warning-rgb: 255, 196, 9;
+  /* Advertencia — Amarillo #F7C500 (texto NEGRO obligatorio por contraste) */
+  --ion-color-warning: #f7c500;
+  --ion-color-warning-rgb: 247, 197, 0;
   --ion-color-warning-contrast: #000000;
   --ion-color-warning-contrast-rgb: 0, 0, 0;
-  --ion-color-warning-shade: #e0ac08;
-  --ion-color-warning-tint: #ffca22;
+  --ion-color-warning-shade: #d9ad00;
+  --ion-color-warning-tint: #f8cb1a;
 
-  --ion-color-danger: #eb445a;
-  --ion-color-danger-rgb: 235, 68, 90;
+  /* Peligro / Error — Rojo acento Gobierno #FF1D3D */
+  --ion-color-danger: #ff1d3d;
+  --ion-color-danger-rgb: 255, 29, 61;
   --ion-color-danger-contrast: #ffffff;
   --ion-color-danger-contrast-rgb: 255, 255, 255;
-  --ion-color-danger-shade: #cf3c4f;
-  --ion-color-danger-tint: #ed576b;
+  --ion-color-danger-shade: #e01a36;
+  --ion-color-danger-tint: #ff3450;
 
+  /* Medium — Gris neutro */
   --ion-color-medium: #92949c;
   --ion-color-medium-rgb: 146, 148, 156;
   --ion-color-medium-contrast: #ffffff;
@@ -41,10 +71,15 @@
   --ion-color-medium-shade: #808289;
   --ion-color-medium-tint: #9d9fa6;
 
-  --ion-color-light: #f4f5f8;
-  --ion-color-light-rgb: 244, 245, 248;
+  /* Light — Gris de fondo institucional #EDF0F5 */
+  --ion-color-light: #edf0f5;
+  --ion-color-light-rgb: 237, 240, 245;
   --ion-color-light-contrast: #000000;
   --ion-color-light-contrast-rgb: 0, 0, 0;
-  --ion-color-light-shade: #d7d8da;
-  --ion-color-light-tint: #f5f6f9;
+  --ion-color-light-shade: #d1d3d8;
+  --ion-color-light-tint: #eff2f6;
+
+  /* Fondo general de la app = gris institucional */
+  --ion-background-color: #edf0f5;
+  --ion-background-color-rgb: 237, 240, 245;
 }
