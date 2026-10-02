@@ -20,3 +20,38 @@
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
+
+/* ============================================================
+   Calendario (ion-datetime) — colores institucionales legibles
+   Se define aquí (global, sin encapsular) porque los ::part del
+   ion-datetime no cruzan la encapsulación scoped de los componentes.
+   ============================================================ */
+ion-datetime {
+  --background: #ffffff;
+  --background-rgb: 255, 255, 255;
+  --title-color: #25306b;
+  color: #25306b;
+}
+
+/* Números de los días: azul institucional sobre blanco */
+ion-datetime::part(calendar-day) {
+  color: #25306b;
+}
+
+/* Día de hoy destacado en celeste */
+ion-datetime::part(calendar-day today) {
+  color: #006bb9;
+  font-weight: 700;
+}
+
+/* Día seleccionado/activo: fondo azul, texto blanco */
+ion-datetime::part(calendar-day active),
+ion-datetime::part(calendar-day active):focus {
+  color: #ffffff;
+  background: #25306b;
+}
+
+/* Días deshabilitados (relleno de otros meses) atenuados */
+ion-datetime::part(calendar-day disabled) {
+  color: #c0c4cc;
+}

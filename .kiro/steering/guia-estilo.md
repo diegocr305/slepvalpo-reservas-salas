@@ -228,6 +228,10 @@ sin sufijo = estable de producción.
     "Esta Semana" y "Este Mes" por bajo uso). El título del grupo refleja correctamente el
     filtro: "HOY" para hoy, la fecha real al elegir una fecha específica, y agrupado por fecha
     en "Todas".
+  - `1.6.1`: fix definitivo del calendario (números de día invisibles). Los estilos de color
+    del `ion-datetime` se movieron a `global.scss` porque los `::part()` NO cruzan la
+    encapsulación scoped de los componentes Angular. Regla importante: para estilar partes
+    internas de componentes Ionic (shadow DOM) usar `global.scss`, no el `<style>` del componente.
 
 ### Comandos para subir versión
 ```
