@@ -75,7 +75,8 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <span>© {{ anioActual }} SLEP Valparaíso — Sistema de Reservas</span>
+        <span>© {{ anioActual }} SLEP Valparaíso · Sistema de Reservas. Todos los derechos reservados.</span>
+        <span class="footer-version">Versión {{ version }}</span>
       </div>
     </footer>
   </div>
@@ -286,13 +287,23 @@
 /* Franja inferior más oscura */
 .footer-bottom {
   background: #1d2650;
-  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
   padding: 14px 24px;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
 .footer-bottom span {
   color: #9aa4d4;
   font-size: 0.78rem;
+}
+
+.footer-version {
+  font-weight: 700;
 }
 
 /* Responsivo */

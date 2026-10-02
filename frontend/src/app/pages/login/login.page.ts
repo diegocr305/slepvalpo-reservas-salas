@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { IonContent, IonSpinner } from '@ionic/angular/standalone';
 import { SupabaseService } from '../../services/supabase.service';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -13,6 +14,7 @@ import { CommonModule } from '@angular/common';
 export class LoginPage implements OnInit {
   loading = false;
   anioActual = new Date().getFullYear();
+  version = environment.version;
 
   constructor(
     private supabaseService: SupabaseService,

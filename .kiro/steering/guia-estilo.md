@@ -163,3 +163,72 @@ App de gobierno chileno en Angular + Ionic: azul institucional `#25306B` + acent
 (`--ion-color-*`) sin Tailwind ni hex inline, componentes `ion-*`, español es-CL, íconos
 ionicons, texto negro sobre amarillo por contraste, fuentes de marca no cargadas (fallback
 sans-serif por decisión), dark mode automático a controlar.
+
+---
+
+## 9. Versionado del sistema (SemVer)
+
+El sistema de Reservas usa **Semantic Versioning**: `MAYOR.MENOR.PARCHE` (ej. `1.1.0`),
+con sufijos de pre-lanzamiento cuando aplica. Referencia: https://semver.org/lang/es/
+
+> Nota de stack: el sistema de Matrículas (React + Vite) inyecta la versión con
+> `__APP_VERSION__` vía `vite.config.ts`. **Reservas es Angular**, así que el mecanismo
+> es distinto (import del `package.json` en `environment`). No copiar el patrón de Vite aquí.
+
+### Fuente única de verdad
+- La versión vive SOLO en `frontend/package.json` → campo `version`.
+- NO escribir la versión a mano en componentes. Se importa del `package.json`:
+  - `frontend/tsconfig.json` tiene `"resolveJsonModule": true` y `"esModuleInterop": true`
+    (necesarios para importar el JSON).
+  - `src/environments/environment.ts` y `environment.prod.ts` hacen
+    `import packageJson from '../../package.json'` y exponen `version: packageJson.version`.
+  - Los componentes la leen desde `environment.version` (ej. el footer del login la muestra
+    como `Versión {{ version }}`).
+- Tras cambiar la versión hay que re-`npm run build` para que el footer muestre el nuevo número.
+
+### Cuándo subir cada número
+| Tipo de cambio | Qué subir | Ejemplo |
+|---|---|---|
+| Arreglo de bug, ajuste menor, cambio de estilo | PARCHE | `1.1.0` → `1.1.1` |
+| Funcionalidad nueva compatible | MENOR | `1.1.0` → `1.2.0` |
+| Cambio grande / incompatible / rediseño | MAYOR | `1.2.0` → `2.0.0` |
+
+### Fases de pre-lanzamiento
+`alpha` (interno) → `beta` (piloto con usuarios reales) → `rc` (casi listo) →
+sin sufijo = estable de producción.
+
+### Estado actual
+- **`1.1.0`** (estable, en producción). Justificación: el sistema ya estaba operativo en
+  `1.0.0`; esta versión agrega funcionalidad compatible (login institucional homologado con
+  RGM 2027, guía de estilo, paleta SLEP, cambio de salas Guayaquil→Bandurrias).
+
+### Comandos para subir versión
+```
+cd frontend
+npm version patch   # 1.1.0 -> 1.1.1
+npm version minor   # 1.1.0 -> 1.2.0
+npm version major   # 1.2.0 -> 2.0.0
+npm version prerelease --preid=beta   # 1.1.0 -> 1.1.1-beta.0
+```
+> `npm version` crea commit + tag git por defecto. Para evitarlo:
+> `npm version <x> --no-git-tag-version` y commitear a mano.
+> Recordar: subir versión → `npm run build` → push a `desarrollo` → desplegar en servidor.
+
+---
+
+## 10. UI institucional compartida — pendiente de extraer a componentes
+
+Hoy el login (`pages/login/login.page.html`) tiene la identidad institucional homologada con
+RGM 2027: franja decorativa celeste/rojo, tarjeta con encabezado azul `#25306B` + borde rojo,
+y footer institucional de 4 columnas (logo / soporte / contacto / marco normativo) con franja
+inferior `#1d2650` que incluye copyright + versión.
+
+**Deuda / próximo paso:** ese header, footer y franja están inline en el login. Para que TODAS
+las pantallas (reservar, calendario, mis reservas) se vean igual, conviene extraerlos a
+componentes Angular reutilizables (ej. `AppFooterComponent`, `AppHeaderComponent`) y usarlos en
+el layout común. Mientras no se haga, replicar los mismos colores y estructura descritos aquí.
+
+Decisiones de contenido del footer (heredadas de RGM, confirmar con el dueño si cambian):
+- NO logo Mineduc, NO redes sociales, NO párrafo descriptivo largo.
+- Crédito "Área de Tecnología e Informática" visible.
+- Copyright sin inventar marcas; incluir la versión a la derecha.
