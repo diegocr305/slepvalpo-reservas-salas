@@ -210,6 +210,11 @@ sin sufijo = estable de producción.
     TODAS las páginas internas. Homologación de Reservas del Día (quitado azul genérico
     `#1976d2` y degradados). Flip mejorado: muestra nombre corto (nombre + apellido) +
     motivo truncado, el bloque se agranda en hover.
+  - `1.4.0`: responsividad y mejor distribución. Grids fluidos (`auto-fill minmax(300px, 1fr)`)
+    en Mis Reservas y Reservas del Día con ancho máximo 1280px centrado (aprovecha pantallas
+    anchas, 1 columna en móvil). Colores de la grilla de Reservar homologados a la paleta SLEP
+    (verde `#3AB54A`, rojo `#FF1D3D`, amarillo `#F7C500`, azul `#006BB9`) y azul Ionic viejo
+    `#3880ff` eliminado. Topbar con media queries (oculta email/área y texto "Salir" en móvil).
 
 ### Comandos para subir versión
 ```
