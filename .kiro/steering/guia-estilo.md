@@ -205,6 +205,11 @@ sin sufijo = estable de producción.
     Reservas, mejor distribución de tarjetas (sin espacio en blanco), búsqueda por fecha
     específica en Mis Reservas, y flip de bloques con reserva en la grilla de Reservar
     (muestra iniciales del responsable, reemplaza el tooltip negro flotante).
+  - `1.3.0`: topbar y tab bar institucionales (azul `#25306B` + franja celeste/rojo,
+    logo blanco, botón Salir rojo) en el componente compartido `components/tabs` → afecta
+    TODAS las páginas internas. Homologación de Reservas del Día (quitado azul genérico
+    `#1976d2` y degradados). Flip mejorado: muestra nombre corto (nombre + apellido) +
+    motivo truncado, el bloque se agranda en hover.
 
 ### Comandos para subir versión
 ```

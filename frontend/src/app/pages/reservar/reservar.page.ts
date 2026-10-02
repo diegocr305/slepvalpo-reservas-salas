@@ -916,6 +916,33 @@ export class ReservarPage implements OnInit, ViewWillEnter {
   }
 
   /**
+   * Nombre corto del responsable: primer nombre + primer apellido.
+   * Ej: "Pilar Andrea Torres Rojas" -> "Pilar Torres".
+   */
+  getNombreCortoReserva(salaId: number, index: number): string {
+    const info = this.getReservaInfo(salaId, index);
+    if (!info || !info.responsable || info.responsable === 'No especificado') {
+      return 'Reserva';
+    }
+    const partes = info.responsable.trim().split(/\s+/);
+    if (partes.length <= 2) return info.responsable;
+    // Asume formato: nombre(s) + apellido(s). Toma primer nombre y primer apellido.
+    const nombre = partes[0];
+    const apellido = partes[partes.length - 2]; // penúltima suele ser primer apellido
+    return `${nombre} ${apellido}`;
+  }
+
+  /**
+   * Motivo truncado para el flip (evita textos largos que desbordan).
+   */
+  getMotivoCortoReserva(salaId: number, index: number, max = 28): string {
+    const info = this.getReservaInfo(salaId, index);
+    if (!info || !info.motivo) return '';
+    const motivo = info.motivo.trim();
+    return motivo.length > max ? motivo.slice(0, max).trimEnd() + '…' : motivo;
+  }
+
+  /**
    * Recarga solo los datos sin refresh completo de página
    */
   private async recargarDatosSutil() {

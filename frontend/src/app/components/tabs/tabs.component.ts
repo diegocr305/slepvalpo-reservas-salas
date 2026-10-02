@@ -10,27 +10,30 @@ import { addCircleOutline, listOutline, logOutOutline, personCircleOutline, cale
   selector: 'app-tabs',
   template: `
     <ion-header>
-      <ion-toolbar>
+      <!-- Franja decorativa Gobierno de Chile -->
+      <div class="franja-gob" aria-hidden="true">
+        <span class="franja-celeste"></span>
+        <span class="franja-rojo"></span>
+      </div>
+      <ion-toolbar class="institucional-toolbar">
         <div class="header-content">
-          <img src="assets/images/E01-Valparaíso-01.png" alt="Logo" class="header-logo" />
+          <img src="assets/images/Logotipo Valparaíso_bco.png" alt="Logo" class="header-logo" />
           <span class="header-title">Reservas</span>
         </div>
         
         <ion-buttons slot="end" *ngIf="usuario">
-          <ion-chip color="primary" class="user-chip">
-            <ion-icon name="person-circle-outline"></ion-icon>
-            <ion-label class="user-label">
-              <div class="user-info">
-                <div class="user-name">{{usuario.nombre_completo}}</div>
-                <div class="user-email">{{usuario.email}}</div>
-                <div class="user-area" *ngIf="usuario.area">{{usuario.area}}</div>
-              </div>
-            </ion-label>
-          </ion-chip>
-          <ion-chip color="danger" (click)="logout()" class="logout-chip">
+          <div class="user-box">
+            <ion-icon name="person-circle-outline" class="user-box-icon"></ion-icon>
+            <div class="user-info">
+              <div class="user-name">{{usuario.nombre_completo}}</div>
+              <div class="user-email">{{usuario.email}}</div>
+              <div class="user-area" *ngIf="usuario.area">{{usuario.area}}</div>
+            </div>
+          </div>
+          <button class="logout-btn" (click)="logout()">
             <ion-icon name="log-out-outline"></ion-icon>
-            <ion-label class="logout-label">Salir</ion-label>
-          </ion-chip>
+            <span>Salir</span>
+          </button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
@@ -55,260 +58,123 @@ import { addCircleOutline, listOutline, logOutOutline, personCircleOutline, cale
     </ion-tabs>
   `,
   styles: [`
+    /* ===== Topbar institucional ===== */
+    .franja-gob {
+      display: flex;
+      width: 100%;
+      height: 4px;
+    }
+    .franja-gob .franja-celeste { flex: 1; background: #006bb9; }
+    .franja-gob .franja-rojo { flex: 1; background: #ff1d3d; }
+
+    .institucional-toolbar {
+      --background: #25306b;
+      --color: #ffffff;
+      --border-width: 0;
+    }
+
     .header-content {
       display: flex;
       align-items: center;
       gap: 10px;
+      padding-left: 12px;
     }
-    
+
     .header-logo {
-      height: 56px;
+      height: 44px;
+      width: auto;
     }
-    
+
     .header-title {
       font-size: 18px;
-      font-weight: bold;
-      color: #1976d2;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.3px;
     }
-    
-    .user-chip {
-      max-width: none;
+
+    /* Caja de usuario */
+    .user-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #ffffff;
+      padding: 2px 10px;
+      margin-right: 6px;
     }
-    
+
+    .user-box-icon {
+      font-size: 1.6rem;
+      color: #c7cde8;
+    }
+
     .user-info {
       text-align: left;
       line-height: 1.2;
     }
-    
-    .user-name {
-      font-weight: 500;
-      font-size: 12px;
-    }
-    
-    .user-email {
-      font-size: 10px;
-      opacity: 0.8;
-    }
-    
-    .user-area {
-      font-size: 10px;
-      opacity: 0.7;
-    }
-    
-    .logout-chip {
-      cursor: pointer;
-      margin-left: 8px;
-    }
-    
-    .logout-label {
-      text-align: center;
-    }
-    
-    /* Estilos móviles */
-    @media (max-width: 768px) {
-      .header-title {
-        display: none;
-      }
-      
-      .header-logo {
-        height: 40px;
-      }
-      
-      .user-chip {
-        max-width: 200px;
-      }
-      
-      .user-name {
-        font-size: 10px;
-        font-weight: 500;
-      }
-      
-      .user-email {
-        font-size: 9px;
-        opacity: 0.8;
-      }
-      
-      .user-area {
-        font-size: 9px;
-        opacity: 0.7;
-      }
-      
-      .logout-chip {
-        margin-left: 4px;
-      }
-      
-      .logout-label {
-        font-size: 10px;
-      }
-    }
-    
-    /* Header con gradiente */
-    .gradient-header {
-      --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-    }
-    
-    .gradient-toolbar {
-      --background: transparent;
-      --color: white;
-      --border-width: 0;
-    }
-    
-    .gradient-header .header-logo {
-      filter: brightness(1.1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-      transition: transform 0.3s ease;
-    }
-    
-    .gradient-header .header-logo:hover {
-      transform: scale(1.05);
-    }
-    
-    .gradient-header .header-title {
-      color: white;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      letter-spacing: 0.5px;
-      font-weight: 700;
-    }
-    
-    /* Chips con glassmorphism */
-    .user-chip-glass {
-      background: rgba(255, 255, 255, 0.15) !important;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: white !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
-      max-width: none;
-    }
-    
-    .user-chip-glass:hover {
-      background: rgba(255, 255, 255, 0.25) !important;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-    }
-    
-    .logout-chip-glass {
-      background: rgba(220, 53, 69, 0.2) !important;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(220, 53, 69, 0.3);
-      color: white !important;
-      cursor: pointer;
-      margin-left: 8px;
-      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
-      transition: all 0.3s ease;
-    }
-    
-    .logout-chip-glass:hover {
-      background: rgba(220, 53, 69, 0.4) !important;
-      transform: translateY(-2px) scale(1.05);
-      box-shadow: 0 8px 20px rgba(220, 53, 69, 0.4);
-    }
-    
-    .logout-chip-glass:active {
-      transform: translateY(0) scale(0.98);
-    }
-    
-    .user-icon, .logout-icon {
-      color: white !important;
-      font-size: 1.2rem;
-    }
-    
-    .gradient-header .user-name {
-      font-weight: 600;
-      color: white;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    }
-    
-    .gradient-header .user-email {
-      opacity: 0.9;
-      color: rgba(255, 255, 255, 0.9);
-    }
-    
-    .gradient-header .user-area {
-      opacity: 0.8;
-      color: rgba(255, 255, 255, 0.8);
-    }
-    
-    .logout-label {
-      color: white !important;
-      font-weight: 500;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    }
-    
 
-    
-    /* Fix para logout label */
-    .logout-label {
-      color: var(--ion-color-danger) !important;
+    .user-name { font-weight: 600; font-size: 12px; color: #ffffff; }
+    .user-email { font-size: 10px; color: #c7cde8; }
+    .user-area { font-size: 10px; color: #9aa4d4; }
+
+    /* Botón salir */
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 29, 61, 0.15);
+      border: 1px solid #ff1d3d;
+      color: #ffffff;
+      border-radius: 20px;
+      padding: 6px 14px;
+      margin-right: 12px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 0.2s ease;
     }
-    
-    /* Estilos para Tab Bar con gradiente */
+    .logout-btn:hover { background: rgba(255, 29, 61, 0.35); }
+    .logout-btn ion-icon { font-size: 1.1rem; }
+
+    @media (max-width: 768px) {
+      .header-title { display: none; }
+      .header-logo { height: 34px; }
+      .user-email, .user-area { display: none; }
+      .user-name { font-size: 11px; }
+      .logout-btn span { display: none; }
+      .logout-btn { padding: 6px 10px; margin-right: 6px; }
+    }
+
+    /* ===== Tab bar institucional ===== */
     .custom-tab-bar {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-      box-shadow: 0 -8px 25px rgba(102, 126, 234, 0.3) !important;
-      border-top: 3px solid #4f46e5 !important;
-      backdrop-filter: blur(10px);
-      position: relative;
+      --background: #25306b;
+      border-top: 3px solid #ff1d3d;
     }
-    
-    .custom-tab-bar::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(255, 255, 255, 0.1);
-      pointer-events: none;
-    }
-    
+
     .custom-tab-button {
-      --color: rgba(255, 255, 255, 0.7) !important;
-      --color-selected: #ffffff !important;
-      --background: transparent !important;
-      --background-focused: rgba(255, 255, 255, 0.1) !important;
-      --ripple-color: rgba(255, 255, 255, 0.3) !important;
-      position: relative;
-      transition: all 0.3s ease;
+      --color: #9aa4d4;
+      --color-selected: #ffffff;
+      --background: transparent;
+      --background-focused: rgba(255, 255, 255, 0.08);
+      --ripple-color: rgba(255, 255, 255, 0.2);
+      transition: all 0.2s ease;
     }
-    
+
     .custom-tab-button.tab-selected {
-      transform: translateY(-2px);
+      --color-selected: #ffffff;
     }
-    
-    .custom-tab-button.tab-selected::before {
-      content: '';
-      position: absolute;
-      top: 8px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 40px;
-      height: 40px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 50%;
-      backdrop-filter: blur(10px);
-      z-index: -1;
-    }
-    
+
     .tab-icon {
       font-size: 1.4rem !important;
-      transition: all 0.3s ease;
     }
-    
+
     .custom-tab-button.tab-selected .tab-icon {
-      transform: scale(1.1);
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+      transform: scale(1.08);
     }
-    
+
     .tab-label {
       font-size: 0.75rem !important;
-      font-weight: 500 !important;
+      font-weight: 600 !important;
       margin-top: 4px !important;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    }
-    
-    .custom-tab-button:hover {
-      --background-focused: rgba(255, 255, 255, 0.15) !important;
     }
   `],
   standalone: true,
