@@ -232,6 +232,13 @@ sin sufijo = estable de producción.
     del `ion-datetime` se movieron a `global.scss` porque los `::part()` NO cruzan la
     encapsulación scoped de los componentes Angular. Regla importante: para estilar partes
     internas de componentes Ionic (shadow DOM) usar `global.scss`, no el `<style>` del componente.
+  - `1.6.2`: refuerzo del fix anterior — se forzó `--ion-text-color` del datetime y del modal
+    a azul, más `!important` en los `::part(calendar-day)`.
+  - `1.7.0`: mejor contraste del tab bar inferior (texto inactivo blanco atenuado legible,
+    tab activo con barra superior blanca + fondo sutil). Formulario de reserva: "Propósito de
+    la Reunión" → "Motivo" con asterisco rojo obligatorio y placeholder con ejemplos
+    representativos ("Reunión de equipo, capacitación, atención de público…"); textarea con
+    auto-grow. Resumen centrado con ancho máximo.
 
 ### Comandos para subir versión
 ```

@@ -403,7 +403,14 @@
 }
 
 .resumen-card {
-  margin: 16px;
+  margin: 16px auto;
+  max-width: 720px;
+}
+
+// Asterisco de campo obligatorio (institucional)
+.campo-obligatorio {
+  color: #ff1d3d;
+  font-weight: 700;
 }
 
 .resumen-info {

@@ -172,17 +172,18 @@
       </div>
 
       <ion-item>
-        <ion-label position="stacked">Propósito de la Reunión</ion-label>
+        <ion-label position="stacked">Motivo <span class="campo-obligatorio">*</span></ion-label>
         <ion-textarea 
           [(ngModel)]="proposito"
           (ionInput)="onPropositoChange()"
-          placeholder="Describe brevemente el propósito de la reunión"
-          rows="3">
+          placeholder="Ej: Reunión de equipo, capacitación, atención de público…"
+          [autoGrow]="true"
+          rows="2">
         </ion-textarea>
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Responsable de la Reserva *</ion-label>
+        <ion-label position="stacked">Responsable <span class="campo-obligatorio">*</span></ion-label>
         <app-responsable-search 
           [selectedResponsable]="responsableSeleccionado"
           (responsableSelected)="onResponsableSelected($event)">

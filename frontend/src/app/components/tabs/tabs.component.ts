@@ -148,33 +148,54 @@ import { addCircleOutline, listOutline, logOutOutline, personCircleOutline, cale
     .custom-tab-bar {
       --background: #25306b;
       border-top: 3px solid #ff1d3d;
+      height: 62px;
     }
 
     .custom-tab-button {
-      --color: #9aa4d4;
+      /* Inactivo: blanco atenuado pero legible (mejor contraste que el celeste tenue) */
+      --color: rgba(255, 255, 255, 0.75);
       --color-selected: #ffffff;
       --background: transparent;
       --background-focused: rgba(255, 255, 255, 0.08);
-      --ripple-color: rgba(255, 255, 255, 0.2);
+      --ripple-color: rgba(255, 255, 255, 0.25);
+      position: relative;
       transition: all 0.2s ease;
     }
 
+    /* Indicador del tab activo: barra superior celeste + fondo sutil */
     .custom-tab-button.tab-selected {
       --color-selected: #ffffff;
+      --background: rgba(255, 255, 255, 0.1);
+    }
+
+    .custom-tab-button.tab-selected::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 12%;
+      right: 12%;
+      height: 3px;
+      background: #ffffff;
+      border-radius: 0 0 3px 3px;
     }
 
     .tab-icon {
-      font-size: 1.4rem !important;
+      font-size: 1.45rem !important;
     }
 
     .custom-tab-button.tab-selected .tab-icon {
-      transform: scale(1.08);
+      transform: scale(1.1);
     }
 
     .tab-label {
-      font-size: 0.75rem !important;
+      font-size: 0.78rem !important;
       font-weight: 600 !important;
       margin-top: 4px !important;
+      letter-spacing: 0.2px;
+    }
+
+    .custom-tab-button.tab-selected .tab-label {
+      font-weight: 700 !important;
     }
   `],
   standalone: true,
