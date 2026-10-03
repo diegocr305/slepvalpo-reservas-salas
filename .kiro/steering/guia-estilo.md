@@ -278,3 +278,47 @@ Decisiones de contenido del footer (heredadas de RGM, confirmar con el dueño si
 - NO logo Mineduc, NO redes sociales, NO párrafo descriptivo largo.
 - Crédito "Área de Tecnología e Informática" visible.
 - Copyright sin inventar marcas; incluir la versión a la derecha.
+
+---
+
+## 11. Despliegue y caché del navegador
+
+### Servidor (producción)
+- Instancia AWS Lightsail con **Bitnami NGINX**. El sistema de Reservas vive en
+  `/opt/bitnami/nginx/apps/reservas` (clon git, rama `desarrollo`), y NGINX sirve la carpeta
+  compilada `frontend/dist`.
+- Dominio: `https://reservas.slepvalparaiso.gob.cl`. Server block:
+  `/opt/bitnami/nginx/conf/server_blocks/11-reservas-https.conf`.
+- Es una **SPA Angular**: una sola `index.html`; todas las rutas (`/tabs/reservar`, etc.)
+  caen a ella vía `try_files $uri $uri/ /index.html`. NO hay páginas HTML separadas.
+
+### Pasos de despliegue
+```
+cd /opt/bitnami/nginx/apps/reservas
+git pull origin desarrollo
+cd frontend && npm run build
+sudo /opt/bitnami/ctlscript.sh restart nginx
+```
+
+### Caché (importante)
+- El server block define caché diferenciada:
+  - `location = /index.html` → `Cache-Control: no-cache, no-store, must-revalidate`
+    (el index NUNCA se cachea, así cada deploy se ve sin forzar recarga).
+  - Assets con hash (`*.js`, `*.css`, imágenes, fuentes) → `expires 1y; immutable`
+    (son inmutables: Angular cambia el hash del nombre en cada build).
+- Esto es **buena práctica estándar** para SPAs, no un workaround.
+- Antes de recargar NGINX tras editar el `.conf`: respaldar con `.bak` y validar con
+  `sudo /opt/bitnami/nginx/sbin/nginx -t` (debe decir "test is successful"). Si falla,
+  restaurar el `.bak`. Editar el `.conf` SOLO dentro de un editor (nano), nunca pegarlo en bash.
+
+### Comportamiento esperado para usuarios finales
+- Con la config de caché anterior, tras un deploy la mayoría de usuarios ve la versión nueva
+  al entrar normalmente (sin Ctrl+Shift+R).
+- Un usuario que entró JUSTO antes de aplicar el `no-cache` puede conservar un `index.html`
+  viejo en su navegador hasta que expire o reabra el navegador. Caso poco frecuente.
+
+### PENDIENTE (decisión del dueño: por ahora NO se implementa)
+- Para garantía 100% de que ningún usuario quede con versión vieja en NINGÚN deploy, la
+  solución robusta es el **Service Worker de Angular con `SwUpdate`** (detecta versión nueva y
+  auto-recarga o avisa). Queda documentado como mejora futura; hoy se confía en la config de
+  caché de NGINX, que cubre a la mayoría.
