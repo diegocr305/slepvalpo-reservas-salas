@@ -183,7 +183,7 @@
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Responsable <span class="campo-obligatorio">*</span></ion-label>
+        <ion-label position="stacked">Organizador de la reunión <span class="campo-obligatorio">*</span></ion-label>
         <app-responsable-search 
           [selectedResponsable]="responsableSeleccionado"
           (responsableSelected)="onResponsableSelected($event)">
@@ -232,7 +232,7 @@
     id="error-alert"
     class="custom-alert"
     header="Campos incompletos"
-    message="Por favor completa todos los campos: propósito y responsable son obligatorios"
+    message="Por favor completa todos los campos: motivo y organizador son obligatorios"
     [buttons]="[{text: 'Aceptar', role: 'cancel'}]">
   </ion-alert>
 
@@ -291,7 +291,7 @@
               <ion-item lines="none">
                 <ion-icon name="person-circle" slot="start" color="primary"></ion-icon>
                 <ion-label>
-                  <h3>Responsable</h3>
+                  <h3>Organizador</h3>
                   <p>{{modalData?.responsable}}</p>
                 </ion-label>
               </ion-item>

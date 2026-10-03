@@ -239,6 +239,9 @@ sin sufijo = estable de producción.
     la Reunión" → "Motivo" con asterisco rojo obligatorio y placeholder con ejemplos
     representativos ("Reunión de equipo, capacitación, atención de público…"); textarea con
     auto-grow. Resumen centrado con ancho máximo.
+  - `1.7.1`: texto "Responsable" → "Organizador de la reunión" / "Organizador" en toda la UI
+    (formulario, buscador, tarjetas de Mis Reservas y Reservas del Día, modal). Solo cambió el
+    texto visible; el campo interno sigue siendo `responsable` / `responsable_id` en código y BD.
 
 ### Comandos para subir versión
 ```

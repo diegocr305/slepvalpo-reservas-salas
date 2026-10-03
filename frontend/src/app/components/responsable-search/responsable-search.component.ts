@@ -14,7 +14,7 @@ interface Usuario {
   template: `
     <ion-searchbar 
       [debounce]="1000" 
-      placeholder="Buscar responsable..."
+      placeholder="Buscar organizador..."
       (ionInput)="handleInput($event)">
     </ion-searchbar>
     
@@ -30,7 +30,7 @@ interface Usuario {
     <div *ngIf="selectedResponsable" class="selected-responsable">
       <ion-item>
         <ion-label>
-          <h3>Responsable seleccionado:</h3>
+          <h3>Organizador seleccionado:</h3>
           <p>{{ selectedResponsable.nombre_completo }} ({{ selectedResponsable.email }})</p>
         </ion-label>
       </ion-item>
