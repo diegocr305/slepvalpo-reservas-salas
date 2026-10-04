@@ -295,6 +295,11 @@ sin sufijo = estable de producción.
     legibles a 150%, por eso se adapta el layout en vez de forzar. Además, columna "Sala"
     congelada (`position: sticky; left: 0`) para que, si en algún caso extremo la grilla
     scrollea, el nombre de la sala siga visible.
+  - `1.9.5`: fix del calendario de Mis Reservas (salía vacío y en "octubre de 1929"). Se calcó
+    el patrón del calendario de Reservar (que sí funciona): `ion-content` con `[scrollY]="false"`,
+    datetime con `[showDefaultButtons]="false"`, y se re-inicializa `fechaEspecifica` a una ISO
+    válida al abrir el selector si está vacía/ inválida. Modal más compacto y redondeado
+    (`--width: 92%; --max-width: 400px; --height: auto`).
 
 ### Comandos para subir versión
 ```

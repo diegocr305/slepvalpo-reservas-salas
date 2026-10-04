@@ -47,13 +47,17 @@
                 </ion-buttons>
               </ion-toolbar>
             </ion-header>
-            <ion-content class="ion-padding" style="display:flex; flex-direction:column; align-items:center;">
+            <ion-content 
+              class="ion-padding" 
+              [scrollY]="false"
+              style="display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;">
               <ion-datetime
                 [(ngModel)]="fechaEspecifica"
                 presentation="date"
-                style="max-width: 350px; width: 100%;">
+                [showDefaultButtons]="false"
+                style="max-width: 350px; width: 100%; margin: 0 auto;">
               </ion-datetime>
-              <ion-button expand="block" color="primary" (click)="confirmarFechaEspecifica()" style="max-width:350px; width:100%; margin-top:12px;">
+              <ion-button expand="block" color="primary" (click)="confirmarFechaEspecifica()" style="max-width:350px; width:100%; margin-top:16px;">
                 Buscar reservas de esta fecha
               </ion-button>
             </ion-content>
@@ -488,16 +492,17 @@
   justify-content: center;
 }
 
-/* Calendario dentro del modal: asegurar que se vea completo */
+/* Calendario dentro del modal: compacto y redondeado (como el de Reservar) */
 .modal-calendario {
-  --width: 360px;
-  --height: 520px;
+  --width: 92%;
+  --max-width: 400px;
+  --height: auto;
   --border-radius: 16px;
 }
 
 .modal-calendario ion-datetime {
   width: 100%;
-  max-width: 340px;
+  max-width: 350px;
 }
 /* NOTA: los colores de los días del calendario se definen en global.scss
    (los ::part de ion-datetime no cruzan la encapsulación scoped del componente). */

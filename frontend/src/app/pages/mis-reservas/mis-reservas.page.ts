@@ -566,6 +566,10 @@ export class MisReservasPage implements OnInit, ViewWillEnter {
   aplicarFiltroFecha() {
     // Si el usuario elige "Fecha", abrir el selector; si no, recargar directo
     if (this.rangoFechaSeleccionado === 'fecha') {
+      // Garantizar una fecha válida (evita que el calendario abra en un año inválido)
+      if (!this.fechaEspecifica || isNaN(new Date(this.fechaEspecifica).getTime())) {
+        this.fechaEspecifica = new Date().toISOString();
+      }
       this.mostrarSelectorFecha = true;
       return;
     }
