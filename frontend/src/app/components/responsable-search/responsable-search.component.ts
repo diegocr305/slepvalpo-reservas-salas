@@ -54,8 +54,31 @@ interface Usuario {
     .selected-responsable ion-item {
       --background: var(--ion-color-light);
       --border-color: var(--ion-color-primary);
+      --padding-end: 0;
+      --inner-padding-end: 0;
       border: 1px solid var(--ion-color-primary);
       border-radius: 8px;
+    }
+    .selected-responsable ion-label h3 {
+      font-size: 0.8rem;
+      font-weight: 700;
+      white-space: normal;
+    }
+    .selected-responsable ion-label p {
+      font-size: 0.72rem;
+      white-space: normal;
+      word-break: break-word;
+      line-height: 1.25;
+    }
+    /* Botón quitar: tamaño fijo para que no se corte */
+    .btn-quitar {
+      --padding-start: 4px;
+      --padding-end: 4px;
+      margin: 0;
+      flex-shrink: 0;
+    }
+    .btn-quitar ion-icon {
+      font-size: 1.3rem;
     }
   `],
   standalone: true,

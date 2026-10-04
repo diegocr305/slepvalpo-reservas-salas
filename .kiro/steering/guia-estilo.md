@@ -279,6 +279,10 @@ sin sufijo = estable de producción.
     Confirmar). La grilla fluida (celdas flex) aplica desde 992px en ambos layouts. El panel
     lateral tiene `max-height: calc(100vh - 90px)` + `overflow-y: auto` para que, si su contenido
     es más alto que la pantalla, tenga scroll propio y nunca se corte el botón Confirmar.
+  - `1.9.2`: breakpoint del panel lateral bajado a ≥1280px (cubre laptops 1920px con escalado
+    de Windows 125-150%, que reducen el ancho CSS efectivo). Panel a 300px. Fix del botón quitar
+    organizador (X) que se cortaba: la tarjeta del organizador seleccionado ahora tiene el botón
+    con tamaño fijo (flex-shrink:0), texto más chico con wrap y sin padding-end que lo empujara.
 
 ### Comandos para subir versión
 ```

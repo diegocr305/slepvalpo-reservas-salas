@@ -236,11 +236,11 @@
 }
 
 // ---------------------------------------------------------------------------
-// Dos columnas (panel lateral) SOLO en pantallas MUY anchas (≥1400px).
-// En laptops y pantallas medianas se apila: grilla ancha arriba, formulario
-// abajo. Así nunca se corta ni la grilla ni el botón Confirmar.
+// Dos columnas (panel lateral) en pantallas anchas (≥1280px, cubre laptops
+// 1920px con escalado de Windows 125-150%). Abajo de eso se apila.
+// La grilla es fluida, así que el panel lateral no obliga a scroll horizontal.
 // ---------------------------------------------------------------------------
-@media (min-width: 1400px) {
+@media (min-width: 1280px) {
   .reservar-layout {
     flex-direction: row;
     padding: 0 10px;
@@ -251,14 +251,14 @@
     min-width: 0;
   }
   .columna-formulario {
-    flex: 0 0 320px;
-    width: 320px;
+    flex: 0 0 300px;
+    width: 300px;
     position: sticky;
     top: 10px;
     align-self: flex-start;
     // Si el formulario es más alto que la pantalla, que tenga su propio scroll
     // (así nunca se corta el botón Confirmar).
-    max-height: calc(100vh - 90px);
+    max-height: calc(100vh - 80px);
     overflow-y: auto;
   }
 }
