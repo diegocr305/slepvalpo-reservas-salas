@@ -1,6 +1,6 @@
 {
   "name": "slepvalpo-reservas-frontend",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "description": "Sistema de Reservas de Salas SLEP Valparaíso",
   "scripts": {
     "ng": "ng",

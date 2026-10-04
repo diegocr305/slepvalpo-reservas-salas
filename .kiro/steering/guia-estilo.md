@@ -273,6 +273,12 @@ sin sufijo = estable de producción.
     `overflow-x: hidden`: se ven las 11 horas completas sin scroll en cualquier pantalla de
     laptop/desktop. Encabezados de hora en formato compacto "08-09" (método `horarioCorto`).
     En móvil (<992px) la grilla mantiene scroll-x (son muchas columnas para un celular).
+  - `1.9.1`: ajuste clave de breakpoints. El panel lateral (2 columnas) ahora solo se activa en
+    pantallas MUY anchas (≥1400px); en laptops y pantallas medianas (992–1399px) el formulario
+    se APILA abajo, dándole todo el ancho a la grilla (así no se corta ni la grilla ni el botón
+    Confirmar). La grilla fluida (celdas flex) aplica desde 992px en ambos layouts. El panel
+    lateral tiene `max-height: calc(100vh - 90px)` + `overflow-y: auto` para que, si su contenido
+    es más alto que la pantalla, tenga scroll propio y nunca se corte el botón Confirmar.
 
 ### Comandos para subir versión
 ```

@@ -183,28 +183,14 @@
   width: 100%;
 }
 
-// Escritorio: dos columnas lado a lado
+// ---------------------------------------------------------------------------
+// Grilla FLUIDA desde 992px: las celdas se reparten el ancho disponible (sin
+// anchos fijos) para adaptarse a cualquier pantalla SIN scroll horizontal.
+// (Aplica tanto en layout apilado como en 2 columnas.)
+// ---------------------------------------------------------------------------
 @media (min-width: 992px) {
-  .reservar-layout {
-    flex-direction: row;
-    padding: 0 10px;
-    gap: 12px;
-  }
-  .columna-grilla {
-    flex: 1 1 auto;
-  }
-  .columna-formulario {
-    flex: 0 0 300px;
-    width: 300px;
-    position: sticky;
-    top: 10px;
-    align-self: flex-start; // necesario para que sticky funcione dentro de flex
-  }
-
-  // Grilla FLUIDA en escritorio: las celdas se reparten el ancho disponible,
-  // sin anchos fijos, para adaptarse a cualquier pantalla SIN scroll horizontal.
   .grilla-container {
-    overflow-x: hidden; // ya no hace falta scroll: todo cabe adaptándose
+    overflow-x: hidden;
   }
   .sala-column-header,
   .sala-info {
@@ -213,7 +199,6 @@
     flex: 0 0 104px;
     padding: 6px 8px;
   }
-  // Las celdas de horario pierden el min-width y se reparten con flex:1
   .horario-header,
   .horario-slot {
     min-width: 0;
@@ -233,8 +218,7 @@
     font-size: 0.82rem;
   }
 
-  // --- Compactar la zona superior (fecha + edificio) para ganar alto vertical ---
-  // Fecha y boton "Elegir fecha" en una sola fila
+  // Compactar zona superior siempre en escritorio
   .fecha-principal {
     padding: 4px 16px;
     display: flex;
@@ -242,30 +226,40 @@
     justify-content: center;
     gap: 16px;
   }
-  .botones-accion {
-    margin: 0;
+  .botones-accion { margin: 0; }
+  .fecha-navegacion { gap: 14px; margin-bottom: 0; }
+  .fecha-navegacion h1 { font-size: 1.15em; }
+  .flecha-btn { width: 34px; height: 34px; font-size: 18px; }
+  .edificio-selector { padding: 8px 16px; }
+  .seccion-titulo { padding: 8px 16px; }
+  .seccion-titulo h3 { font-size: 1rem; margin: 0; }
+}
+
+// ---------------------------------------------------------------------------
+// Dos columnas (panel lateral) SOLO en pantallas MUY anchas (≥1400px).
+// En laptops y pantallas medianas se apila: grilla ancha arriba, formulario
+// abajo. Así nunca se corta ni la grilla ni el botón Confirmar.
+// ---------------------------------------------------------------------------
+@media (min-width: 1400px) {
+  .reservar-layout {
+    flex-direction: row;
+    padding: 0 10px;
+    gap: 12px;
   }
-  .fecha-navegacion {
-    gap: 14px;
-    margin-bottom: 0;
+  .columna-grilla {
+    flex: 1 1 auto;
+    min-width: 0;
   }
-  .fecha-navegacion h1 {
-    font-size: 1.15em;
-  }
-  .flecha-btn {
-    width: 34px;
-    height: 34px;
-    font-size: 18px;
-  }
-  .edificio-selector {
-    padding: 8px 16px;
-  }
-  .seccion-titulo {
-    padding: 8px 16px;
-  }
-  .seccion-titulo h3 {
-    font-size: 1rem;
-    margin: 0;
+  .columna-formulario {
+    flex: 0 0 320px;
+    width: 320px;
+    position: sticky;
+    top: 10px;
+    align-self: flex-start;
+    // Si el formulario es más alto que la pantalla, que tenga su propio scroll
+    // (así nunca se corta el botón Confirmar).
+    max-height: calc(100vh - 90px);
+    overflow-y: auto;
   }
 }
 
