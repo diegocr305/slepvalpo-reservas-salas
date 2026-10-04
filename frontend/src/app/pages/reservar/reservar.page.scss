@@ -561,18 +561,39 @@
 // Resumen compacto en la columna lateral (escritorio): menos aire, cabe sin scroll
 @media (min-width: 992px) {
   .columna-formulario .resumen-card ion-card-header {
-    padding: 12px 14px 4px;
+    padding: 10px 14px 2px;
   }
   .columna-formulario .resumen-card ion-card-title {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
   .columna-formulario .resumen-card ion-card-content {
-    padding: 8px 14px 14px;
+    padding: 6px 14px 12px;
+  }
+  // El textarea del motivo: fuente un poco menor para que el placeholder no se corte
+  .columna-formulario ion-textarea {
+    font-size: 0.85rem;
+  }
+  .columna-formulario .resumen-info {
+    margin-bottom: 6px;
   }
   .columna-formulario .resumen-info div {
-    margin-bottom: 4px;
-    padding: 6px 8px;
-    font-size: 0.82rem;
+    margin-bottom: 2px;
+    padding: 4px 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 4px;
+  }
+  // Menos gap entre el bloque de info y los chips de motivo
+  .columna-formulario ion-item {
+    --min-height: 30px;
+  }
+  .columna-formulario .chips-motivo {
+    padding: 2px 0 4px;
+    gap: 5px;
+  }
+  .columna-formulario .chip-motivo {
+    font-size: 0.7rem;
+    padding: 3px 9px;
   }
   .columna-formulario ion-item {
     --min-height: 36px;

@@ -263,6 +263,10 @@ sin sufijo = estable de producción.
     botón "Elegir fecha" van en una sola fila; flechas de navegación más pequeñas (34px);
     menos padding en fecha/edificio/título. Grilla aún más compacta (columna sala 110px,
     celdas 50px, filas 38px) para eliminar el scroll horizontal junto al panel.
+  - `1.8.4`: resumen del panel más compacto — cajas Fecha/Sala/Horarios más pequeñas, en bold,
+    con menos gap entre ellas y hacia los chips de motivo. Placeholder del motivo acortado
+    ("Toca un motivo o escribe uno…") para que no se corte en el panel angosto; fuente del
+    textarea reducida.
 
 ### Comandos para subir versión
 ```
