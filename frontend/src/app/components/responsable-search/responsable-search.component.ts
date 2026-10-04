@@ -1,6 +1,8 @@
 import { Component, Output, EventEmitter, Input, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonItem, IonLabel, IonList, IonSearchbar } from '@ionic/angular/standalone';
+import { IonItem, IonLabel, IonList, IonSearchbar, IonButton, IonIcon } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { closeCircle } from 'ionicons/icons';
 import { SupabaseService } from '../../services/supabase.service';
 
 interface Usuario {
@@ -28,11 +30,20 @@ interface Usuario {
     </ion-list>
     
     <div *ngIf="selectedResponsable" class="selected-responsable">
-      <ion-item>
+      <ion-item lines="none">
         <ion-label>
           <h3>Organizador seleccionado:</h3>
           <p>{{ selectedResponsable.nombre_completo }} ({{ selectedResponsable.email }})</p>
         </ion-label>
+        <ion-button
+          slot="end"
+          fill="clear"
+          color="danger"
+          class="btn-quitar"
+          (click)="quitarSeleccion()"
+          aria-label="Quitar organizador seleccionado">
+          <ion-icon name="close-circle" slot="icon-only"></ion-icon>
+        </ion-button>
       </ion-item>
     </div>
   `,
@@ -48,15 +59,17 @@ interface Usuario {
     }
   `],
   standalone: true,
-  imports: [CommonModule, IonItem, IonLabel, IonList, IonSearchbar],
+  imports: [CommonModule, IonItem, IonLabel, IonList, IonSearchbar, IonButton, IonIcon],
 })
 export class ResponsableSearchComponent {
-  @Output() responsableSelected = new EventEmitter<Usuario>();
+  @Output() responsableSelected = new EventEmitter<Usuario | null>();
   @Input() selectedResponsable: Usuario | null = null;
   
   public results: Usuario[] = [];
 
-  constructor(private supabaseService: SupabaseService, private cdr: ChangeDetectorRef) {}
+  constructor(private supabaseService: SupabaseService, private cdr: ChangeDetectorRef) {
+    addIcons({ closeCircle });
+  }
 
   async handleInput(event: Event) {
     const target = event.target as HTMLIonSearchbarElement;
@@ -105,6 +118,14 @@ export class ResponsableSearchComponent {
   clearSelection() {
     this.selectedResponsable = null;
     this.results = [];
+    this.cdr.detectChanges();
+  }
+
+  /** Quita el organizador seleccionado y notifica al formulario padre. */
+  quitarSeleccion() {
+    this.selectedResponsable = null;
+    this.results = [];
+    this.responsableSelected.emit(null);
     this.cdr.detectChanges();
   }
 }

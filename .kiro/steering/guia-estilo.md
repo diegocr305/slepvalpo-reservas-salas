@@ -255,6 +255,10 @@ sin sufijo = estable de producción.
     con `white-space: nowrap` para que no se corte el texto (Disponible/Ocupado/Mi Reserva/
     Seleccionado). Buscador de organizador: ahora requiere mínimo 2 letras, máximo 6 resultados
     ordenados por nombre, debounce 400ms.
+  - `1.8.2`: botón para quitar el organizador seleccionado (ícono X rojo en la tarjeta del
+    organizador). `ResponsableSearchComponent` ahora emite `null` al quitar, y el formulario
+    deshabilita Confirmar al no haber organizador. Evita tener que reemplazar por otro para
+    corregir una selección errónea.
 
 ### Comandos para subir versión
 ```
