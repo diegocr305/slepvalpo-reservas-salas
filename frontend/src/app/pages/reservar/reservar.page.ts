@@ -71,6 +71,26 @@ export class ReservarPage implements OnInit, ViewWillEnter {
     '16:00-17:00', '17:00-18:00', '18:00-19:00'
   ];
 
+  // Motivos sugeridos (chips) basados en el histórico real de uso
+  motivosSugeridos = [
+    'PMG',
+    'Reunión Equipo Directivo',
+    'Comisión Evaluadora',
+    'Reunión de equipo',
+    'Acopio de material'
+  ];
+
+  /** Aplica un motivo sugerido al campo. Si ya estaba puesto, lo limpia (toggle). */
+  seleccionarMotivo(motivo: string) {
+    this.proposito = this.proposito.trim() === motivo ? '' : motivo;
+    this.onPropositoChange();
+  }
+
+  /** Indica si un chip de motivo está activo (para resaltarlo). */
+  esMotivoActivo(motivo: string): boolean {
+    return this.proposito.trim() === motivo;
+  }
+
   constructor(
     private supabaseService: SupabaseService,
     public authService: AuthService,

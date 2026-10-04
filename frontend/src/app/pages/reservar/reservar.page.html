@@ -86,13 +86,17 @@
     <p>Cargando salas...</p>
   </div>
 
+  <!-- Layout de 2 columnas: grilla (izq) + formulario (der) en escritorio -->
+  <div *ngIf="!cargando" class="reservar-layout">
+  <!-- Columna izquierda: grilla -->
+  <div class="columna-grilla">
   <!-- Título de disponibilidad -->
-  <div *ngIf="!cargando" class="seccion-titulo">
+  <div class="seccion-titulo">
     <h3>Disponibilidad de Salas</h3>
   </div>
 
   <!-- Grilla de horarios -->
-  <div *ngIf="!cargando" class="grilla-container">
+  <div class="grilla-container">
     <!-- Encabezados de horarios -->
     <div class="horarios-header">
       <div class="sala-column-header">Sala</div>
@@ -158,7 +162,10 @@
       <span>Seleccionado</span>
     </div>
   </div>
+  </div><!-- /columna-grilla -->
 
+  <!-- Columna derecha: formulario (sticky en escritorio) -->
+  <div class="columna-formulario">
   <!-- Resumen de selección - Solo para roles con permisos -->
   <ion-card *ngIf="authService.canCreateReservations() && salaSeleccionada && horariosSeleccionados.length > 0" class="resumen-card">
     <ion-card-header>
@@ -171,12 +178,25 @@
         <div><strong>Horarios:</strong> {{horariosTexto}}</div>
       </div>
 
-      <ion-item>
+      <ion-item lines="none">
         <ion-label position="stacked">Motivo <span class="campo-obligatorio">*</span></ion-label>
+      </ion-item>
+      <!-- Chips de motivos sugeridos -->
+      <div class="chips-motivo">
+        <button
+          *ngFor="let m of motivosSugeridos"
+          type="button"
+          class="chip-motivo"
+          [class.activo]="esMotivoActivo(m)"
+          (click)="seleccionarMotivo(m)">
+          {{ m }}
+        </button>
+      </div>
+      <ion-item>
         <ion-textarea 
           [(ngModel)]="proposito"
           (ionInput)="onPropositoChange()"
-          placeholder="Ej: Reunión de equipo, capacitación, atención de público…"
+          placeholder="Toca un motivo o escribe uno: reunión, capacitación, atención de público…"
           [autoGrow]="true"
           rows="2">
         </ion-textarea>
@@ -199,6 +219,14 @@
       </ion-button>
     </ion-card-content>
   </ion-card>
+
+  <!-- Mensaje guía cuando aún no hay selección (solo escritorio) -->
+  <div class="hint-seleccion" *ngIf="authService.canCreateReservations() && (!salaSeleccionada || horariosSeleccionados.length === 0)">
+    <ion-icon name="calendar-outline"></ion-icon>
+    <p>Selecciona uno o más horarios disponibles en la grilla para crear una reserva.</p>
+  </div>
+  </div><!-- /columna-formulario -->
+  </div><!-- /reservar-layout -->
 
   <!-- Alert de cancelación -->
   <ion-alert

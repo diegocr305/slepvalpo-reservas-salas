@@ -242,6 +242,13 @@ sin sufijo = estable de producción.
   - `1.7.1`: texto "Responsable" → "Organizador de la reunión" / "Organizador" en toda la UI
     (formulario, buscador, tarjetas de Mis Reservas y Reservas del Día, modal). Solo cambió el
     texto visible; el campo interno sigue siendo `responsable` / `responsable_id` en código y BD.
+  - `1.8.0`: página Reservar con layout de 2 columnas (Opción 2). En escritorio (≥992px) la
+    grilla va a la izquierda y el formulario a la derecha, FIJO (sticky), siempre visible sin
+    scroll. En móvil (<992px) se apila (grilla arriba, formulario abajo). Chips de motivos
+    sugeridos (PMG, Reunión Equipo Directivo, Comisión Evaluadora, Reunión de equipo, Acopio
+    de material) basados en el histórico real: tocar un chip rellena el campo Motivo (toggle),
+    el campo sigue editable libre. Hint guía cuando no hay selección. Los chips se definen en
+    `motivosSugeridos` en reservar.page.ts (lista fija; a futuro podría ser una tabla en BD).
 
 ### Comandos para subir versión
 ```
