@@ -322,3 +322,26 @@ sudo /opt/bitnami/ctlscript.sh restart nginx
   solución robusta es el **Service Worker de Angular con `SwUpdate`** (detecta versión nueva y
   auto-recarga o avisa). Queda documentado como mejora futura; hoy se confía en la config de
   caché de NGINX, que cubre a la mayoría.
+
+---
+
+## 12. Seguridad de la base (Supabase)
+
+- La URL del proyecto y la **anon key** son públicas por diseño (van al navegador en apps
+  cliente). Lo que protege la base es **RLS (Row Level Security)**, no ocultar esas claves.
+  La **service_role key** jamás debe estar en el frontend (verificado: no lo está).
+- Políticas RLS del proyecto: ver `db/policies.sql` (usuarios, reservas, salas, edificios,
+  qr_checkin) y `db/fix_rls_seguridad.sql` (historial_reservas + vistas).
+
+### Correcciones del linter de Supabase (04/10/2026) — ver `db/fix_rls_seguridad.sql`
+- `historial_reservas`: se habilitó RLS con política de solo lectura para autenticados. La
+  tabla la llenan triggers SECURITY DEFINER, así que no se dan políticas de escritura a
+  usuarios (historial inmutable para ellos, auditoría automática intacta).
+- `vista_reservas_completa` y `vista_historial_completo`: cambiadas a `security_invoker = on`
+  (respetan el RLS del usuario que consulta). Se usó `ALTER VIEW ... SET` para NO alterar su
+  consulta interna.
+
+### IMPORTANTE: objetos de OTRO sistema en la misma base
+- Las vistas con prefijo `v_oirs_*` pertenecen al sistema **OIRS**, que comparte la misma
+  base Supabase. NO modificarlas desde el proyecto de Reservas; las corrige el responsable de
+  OIRS. Al revisar el linter, filtrar solo los objetos de Reservas.
