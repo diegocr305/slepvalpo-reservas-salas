@@ -16,7 +16,7 @@ interface Usuario {
   template: `
     <ion-searchbar 
       [debounce]="400" 
-      placeholder="Escribe al menos 2 letras del nombre…"
+      placeholder="Buscar por nombre…"
       (ionInput)="handleInput($event)">
     </ion-searchbar>
     

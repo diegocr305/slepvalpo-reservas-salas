@@ -283,6 +283,11 @@ sin sufijo = estable de producción.
     de Windows 125-150%, que reducen el ancho CSS efectivo). Panel a 300px. Fix del botón quitar
     organizador (X) que se cortaba: la tarjeta del organizador seleccionado ahora tiene el botón
     con tamaño fijo (flex-shrink:0), texto más chico con wrap y sin padding-end que lo empujara.
+  - `1.9.3`: fix definitivo del desbordamiento de la grilla. CAUSA: `.horarios-grid` era `flex:1`
+    sin `min-width: 0`, lo que impedía que las celdas encogieran (flexbox no encoge bajo el
+    contenido natural sin `min-width:0`). Agregado `min-width: 0`. Además columna "Sala" reducida
+    a 88px en escritorio y celdas con menos padding, para que las 11 horas quepan sin scroll en
+    la pantalla de laptop. Placeholder del buscador acortado a "Buscar por nombre…".
 
 ### Comandos para subir versión
 ```

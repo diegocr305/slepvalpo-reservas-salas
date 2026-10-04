@@ -194,28 +194,30 @@
   }
   .sala-column-header,
   .sala-info {
-    width: 104px;
-    min-width: 104px;
-    flex: 0 0 104px;
-    padding: 6px 8px;
+    width: 88px;
+    min-width: 88px;
+    flex: 0 0 88px;
+    padding: 6px 6px;
   }
   .horario-header,
   .horario-slot {
     min-width: 0;
     flex: 1 1 0;
+    border-right: 1px solid #e8e8e8;
   }
   .horario-slot {
     height: 38px;
   }
   .horario-header {
-    font-size: 0.72rem;
-    padding: 5px 1px;
+    font-size: 0.68rem;
+    padding: 5px 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   .sala-nombre {
-    font-size: 0.82rem;
+    font-size: 0.78rem;
+    line-height: 1.15;
   }
 
   // Compactar zona superior siempre en escritorio
@@ -331,7 +333,8 @@
 
 .horarios-grid {
   display: flex;
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0; // permite que las celdas encojan sin desbordar
 }
 
 .horario-header {
