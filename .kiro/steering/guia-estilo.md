@@ -288,6 +288,13 @@ sin sufijo = estable de producción.
     contenido natural sin `min-width:0`). Agregado `min-width: 0`. Además columna "Sala" reducida
     a 88px en escritorio y celdas con menos padding, para que las 11 horas quepan sin scroll en
     la pantalla de laptop. Placeholder del buscador acortado a "Buscar por nombre…".
+  - `1.9.4`: Opción A de layout responsivo según escala de Windows. El panel lateral solo se
+    activa con ancho efectivo ≥1400px (escala 100% + monitor ancho). A 150% en laptop (~1280px
+    efectivos) el formulario se APILA abajo y la grilla usa todo el ancho → las 11 horas caben
+    sin scroll. Decisión documentada: con 11 columnas no se puede meter grilla + panel lateral
+    legibles a 150%, por eso se adapta el layout en vez de forzar. Además, columna "Sala"
+    congelada (`position: sticky; left: 0`) para que, si en algún caso extremo la grilla
+    scrollea, el nombre de la sala siga visible.
 
 ### Comandos para subir versión
 ```

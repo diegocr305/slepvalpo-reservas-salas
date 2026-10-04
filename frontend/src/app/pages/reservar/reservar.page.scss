@@ -238,11 +238,12 @@
 }
 
 // ---------------------------------------------------------------------------
-// Dos columnas (panel lateral) en pantallas anchas (≥1280px, cubre laptops
-// 1920px con escalado de Windows 125-150%). Abajo de eso se apila.
-// La grilla es fluida, así que el panel lateral no obliga a scroll horizontal.
+// Dos columnas (panel lateral) SOLO cuando hay ancho efectivo suficiente
+// (≥1400px). A escala 100% con monitor ancho se activa; a 150% en laptop
+// (≈1280px efectivos) se APILA y la grilla usa todo el ancho, mostrando las
+// 11 horas sin scroll. Opción A: adaptar el layout al espacio real.
 // ---------------------------------------------------------------------------
-@media (min-width: 1280px) {
+@media (min-width: 1400px) {
   .reservar-layout {
     flex-direction: row;
     padding: 0 10px;
@@ -329,6 +330,11 @@
   padding: 12px;
   font-weight: 600;
   border-right: 1px solid #e0e0e0;
+  // Columna fija a la izquierda al hacer scroll horizontal
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: #f8f9fa;
 }
 
 .horarios-grid {
@@ -361,6 +367,11 @@
   min-width: 200px;
   padding: 12px;
   border-right: 1px solid #e0e0e0;
+  // Columna fija a la izquierda al hacer scroll horizontal
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #ffffff;
 }
 
 .sala-nombre {
