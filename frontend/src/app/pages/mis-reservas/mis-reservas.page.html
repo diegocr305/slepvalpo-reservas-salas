@@ -37,7 +37,7 @@
           </ion-button>
         </div>
 
-        <ion-modal [isOpen]="mostrarSelectorFecha" (willDismiss)="mostrarSelectorFecha = false" class="modal-calendario">
+        <ion-modal [isOpen]="mostrarSelectorFecha" (willDismiss)="mostrarSelectorFecha = false" [keepContentsMounted]="true" class="modal-calendario">
           <ng-template>
             <ion-header>
               <ion-toolbar>
@@ -496,7 +496,7 @@
 .modal-calendario {
   --width: 92%;
   --max-width: 400px;
-  --height: auto;
+  --height: 470px;
   --border-radius: 16px;
 }
 

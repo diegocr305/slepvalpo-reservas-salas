@@ -298,8 +298,11 @@ sin sufijo = estable de producción.
   - `1.9.5`: fix del calendario de Mis Reservas (salía vacío y en "octubre de 1929"). Se calcó
     el patrón del calendario de Reservar (que sí funciona): `ion-content` con `[scrollY]="false"`,
     datetime con `[showDefaultButtons]="false"`, y se re-inicializa `fechaEspecifica` a una ISO
-    válida al abrir el selector si está vacía/ inválida. Modal más compacto y redondeado
-    (`--width: 92%; --max-width: 400px; --height: auto`).
+    válida al abrir el selector si está vacía/ inválida. Modal más compacto y redondeado.
+  - `1.9.6`: el calendario de Mis Reservas seguía sin renderizar (solo mostraba el header).
+    CAUSA: `ion-datetime` dentro de un `ion-modal` inline con `[isOpen]` no monta su contenido.
+    SOLUCIÓN: `[keepContentsMounted]="true"` en el modal (regla general para datetime en modales
+    inline de Ionic). Alto del modal fijado a 470px para que no colapse.
 
 ### Comandos para subir versión
 ```
