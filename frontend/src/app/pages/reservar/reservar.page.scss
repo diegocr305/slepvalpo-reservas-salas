@@ -187,17 +187,40 @@
 @media (min-width: 992px) {
   .reservar-layout {
     flex-direction: row;
-    padding: 0 12px;
+    padding: 0 10px;
+    gap: 12px;
   }
   .columna-grilla {
     flex: 1 1 auto;
   }
   .columna-formulario {
-    flex: 0 0 380px;
-    width: 380px;
+    flex: 0 0 300px;
+    width: 300px;
     position: sticky;
-    top: 12px;
+    top: 10px;
     align-self: flex-start; // necesario para que sticky funcione dentro de flex
+  }
+
+  // Compactar la grilla en escritorio para que QUEPA junto al panel (sin scroll-x ni zoom)
+  .sala-column-header,
+  .sala-info {
+    width: 120px;
+    min-width: 120px;
+    padding: 8px;
+  }
+  .horario-header,
+  .horario-slot {
+    min-width: 56px;
+  }
+  .horario-slot {
+    height: 42px;
+  }
+  .horario-header {
+    font-size: 0.68rem;
+    padding: 6px 2px;
+  }
+  .sala-nombre {
+    font-size: 0.85rem;
   }
 }
 
@@ -449,17 +472,20 @@
 .leyenda {
   display: flex;
   justify-content: center;
-  gap: 20px;
-  padding: 16px;
+  gap: 16px;
+  padding: 12px 16px;
   background: #f8f9fa;
   flex-wrap: wrap;
+  border-radius: 8px;
+  margin-top: 8px;
 }
 
 .leyenda-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.9em;
+  gap: 6px;
+  font-size: 0.85em;
+  white-space: nowrap;
 }
 
 .color-box {
@@ -494,6 +520,41 @@
   .resumen-card {
     margin: 16px;
     width: auto;
+  }
+}
+
+// Resumen compacto en la columna lateral (escritorio): menos aire, cabe sin scroll
+@media (min-width: 992px) {
+  .columna-formulario .resumen-card ion-card-header {
+    padding: 12px 14px 4px;
+  }
+  .columna-formulario .resumen-card ion-card-title {
+    font-size: 1rem;
+  }
+  .columna-formulario .resumen-card ion-card-content {
+    padding: 8px 14px 14px;
+  }
+  .columna-formulario .resumen-info div {
+    margin-bottom: 4px;
+    padding: 6px 8px;
+    font-size: 0.82rem;
+  }
+  .columna-formulario ion-item {
+    --min-height: 36px;
+    --padding-start: 0;
+  }
+  .columna-formulario .chips-motivo {
+    padding: 4px 0 6px;
+  }
+  .columna-formulario .chip-motivo {
+    font-size: 0.72rem;
+    padding: 4px 10px;
+  }
+  // Botón confirmar un poco más compacto
+  .columna-formulario .resumen-card ion-button {
+    --padding-top: 14px;
+    --padding-bottom: 14px;
+    margin-top: 4px;
   }
 }
 

@@ -249,6 +249,12 @@ sin sufijo = estable de producción.
     de material) basados en el histórico real: tocar un chip rellena el campo Motivo (toggle),
     el campo sigue editable libre. Hint guía cuando no hay selección. Los chips se definen en
     `motivosSugeridos` en reservar.page.ts (lista fija; a futuro podría ser una tabla en BD).
+  - `1.8.1`: ajustes del layout de 2 columnas. Grilla compactada en escritorio (columna sala
+    120px, celdas 56px, filas 42px) para que QUEPA junto al panel sin scroll-x ni necesidad de
+    zoom. Panel del formulario reducido a 300px y resumen más compacto (menos padding). Leyenda
+    con `white-space: nowrap` para que no se corte el texto (Disponible/Ocupado/Mi Reserva/
+    Seleccionado). Buscador de organizador: ahora requiere mínimo 2 letras, máximo 6 resultados
+    ordenados por nombre, debounce 400ms.
 
 ### Comandos para subir versión
 ```

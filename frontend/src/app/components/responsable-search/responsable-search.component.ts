@@ -13,8 +13,8 @@ interface Usuario {
   selector: 'app-responsable-search',
   template: `
     <ion-searchbar 
-      [debounce]="1000" 
-      placeholder="Buscar organizador..."
+      [debounce]="400" 
+      placeholder="Escribe al menos 2 letras del nombre…"
       (ionInput)="handleInput($event)">
     </ion-searchbar>
     
@@ -65,7 +65,8 @@ export class ResponsableSearchComponent {
     console.log('=== HANDLE INPUT ===');
     console.log('Query:', query);
     
-    if (query.length < 1) {
+    // Requiere al menos 2 caracteres para evitar listas enormes con 1 letra
+    if (query.trim().length < 2) {
       this.results = [];
       this.cdr.detectChanges();
       return;
@@ -75,9 +76,10 @@ export class ResponsableSearchComponent {
       const { data, error } = await this.supabaseService.supabase
         .from('usuarios')
         .select('id, nombre_completo, email')
-        .ilike('nombre_completo', `%${query}%`)
+        .ilike('nombre_completo', `%${query.trim()}%`)
         .eq('activo', true)
-        .limit(10);
+        .order('nombre_completo')
+        .limit(6);
 
       console.log('DB Result:', { data, error });
       
