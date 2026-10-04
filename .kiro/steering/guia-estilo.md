@@ -303,6 +303,15 @@ sin sufijo = estable de producción.
     CAUSA: `ion-datetime` dentro de un `ion-modal` inline con `[isOpen]` no monta su contenido.
     SOLUCIÓN: `[keepContentsMounted]="true"` en el modal (regla general para datetime en modales
     inline de Ionic). Alto del modal fijado a 470px para que no colapse.
+  - `1.10.0`: BUG FUNCIONAL grave corregido. Las reservas creadas no aparecían en la grilla y el
+    sistema permitía reservar el mismo horario repetidamente. CAUSA: `calcularDisponibilidad()`
+    (y `cancelarReserva`/`getReservaInfo`) comparaban la hora con `r.hora_inicio === horaInicio +
+    ':00'`, igualdad por string exacto que fallaba si Supabase devolvía la columna TIME en otro
+    formato. SOLUCIÓN: normalizar ambos lados a "HH:MM" con `.slice(0,5)`. Además, defensa
+    anti-duplicados: `procesarReserva()` ahora llama a `verificarDisponibilidad()` contra la BD
+    antes de insertar cada bloque y NO crea duplicados (avisa con toast los horarios ocupados).
+    PENDIENTE recomendado: agregar restricción UNIQUE/EXCLUDE de solape en la tabla `reservas`
+    a nivel BD como última línea de defensa.
 
 ### Comandos para subir versión
 ```

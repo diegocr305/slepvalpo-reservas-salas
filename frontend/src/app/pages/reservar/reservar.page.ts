@@ -180,11 +180,14 @@ export class ReservarPage implements OnInit, ViewWillEnter {
       this.horarios.forEach((horario, index) => {
         const [horaInicio, horaFin] = horario.split('-');
         
-        // Buscar si hay reserva CONFIRMADA en este horario (agregar :00 para coincidir con formato de BD)
+        // Buscar si hay reserva CONFIRMADA en este horario.
+        // Se normalizan ambos lados a "HH:MM" (slice 0,5) para no depender del
+        // formato exacto que devuelva Supabase para columnas TIME (puede venir
+        // como "09:00:00", "09:00:00+00", etc.). Comparar por string exacto fallaba.
         const reserva = this.reservasDelDia.find(r => 
           r.sala_id === sala.id && 
-          r.hora_inicio === horaInicio + ':00' && 
-          r.hora_fin === horaFin + ':00' &&
+          (r.hora_inicio || '').slice(0, 5) === horaInicio && 
+          (r.hora_fin || '').slice(0, 5) === horaFin &&
           r.estado === 'confirmada'
         );
         
@@ -599,7 +602,20 @@ export class ReservarPage implements OnInit, ViewWillEnter {
       
       for (const horario of this.horariosSeleccionados) {
         const [horaInicio, horaFin] = horario.split('-');
-        
+
+        // Defensa anti-duplicados: validar contra la BD que el bloque siga libre
+        // antes de crear (no confiar solo en el estado visual de la grilla).
+        const { data: existentes } = await this.supabaseService.verificarDisponibilidad(
+          this.fechaParaConsulta,
+          this.salaSeleccionada!,
+          horaInicio,
+          horaFin
+        );
+        if (existentes && existentes.length > 0) {
+          errores.push(`${horario}: la sala ya está reservada en ese horario`);
+          continue; // no crear duplicado
+        }
+
         const reservaData = {
           fecha: this.fechaParaConsulta,
           hora_inicio: horaInicio,
@@ -623,6 +639,11 @@ export class ReservarPage implements OnInit, ViewWillEnter {
         } else {
           reservasCreadas.push(horario);
         }
+      }
+
+      // Si hubo horarios ocupados, avisar al usuario
+      if (errores.length > 0) {
+        this.mostrarError('Algunos horarios ya estaban reservados: ' + errores.join(' · '));
       }
       
       // Mostrar resultado
@@ -788,8 +809,8 @@ export class ReservarPage implements OnInit, ViewWillEnter {
       // Buscar la reserva a cancelar
       const reserva = this.reservasDelDia.find(r => 
         r.sala_id === salaId && 
-        r.hora_inicio === horaInicio + ':00' && 
-        r.hora_fin === horaFin + ':00' &&
+        (r.hora_inicio || '').slice(0, 5) === horaInicio && 
+        (r.hora_fin || '').slice(0, 5) === horaFin &&
         r.usuario_id === this.supabaseService.user?.id
       );
       
@@ -911,8 +932,8 @@ export class ReservarPage implements OnInit, ViewWillEnter {
     
     const reserva = this.reservasDelDia.find(r => 
       r.sala_id === salaId && 
-      r.hora_inicio === horaInicio + ':00' && 
-      r.hora_fin === horaFin + ':00' &&
+      (r.hora_inicio || '').slice(0, 5) === horaInicio && 
+      (r.hora_fin || '').slice(0, 5) === horaFin &&
       r.estado === 'confirmada'
     );
     
