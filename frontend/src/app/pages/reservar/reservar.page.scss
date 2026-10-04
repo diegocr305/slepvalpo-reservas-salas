@@ -201,23 +201,33 @@
     align-self: flex-start; // necesario para que sticky funcione dentro de flex
   }
 
-  // Compactar la grilla en escritorio para que QUEPA junto al panel (sin scroll-x ni zoom)
+  // Grilla FLUIDA en escritorio: las celdas se reparten el ancho disponible,
+  // sin anchos fijos, para adaptarse a cualquier pantalla SIN scroll horizontal.
+  .grilla-container {
+    overflow-x: hidden; // ya no hace falta scroll: todo cabe adaptándose
+  }
   .sala-column-header,
   .sala-info {
-    width: 110px;
-    min-width: 110px;
+    width: 104px;
+    min-width: 104px;
+    flex: 0 0 104px;
     padding: 6px 8px;
   }
+  // Las celdas de horario pierden el min-width y se reparten con flex:1
   .horario-header,
   .horario-slot {
-    min-width: 50px;
+    min-width: 0;
+    flex: 1 1 0;
   }
   .horario-slot {
     height: 38px;
   }
   .horario-header {
-    font-size: 0.66rem;
-    padding: 5px 2px;
+    font-size: 0.72rem;
+    padding: 5px 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .sala-nombre {
     font-size: 0.82rem;

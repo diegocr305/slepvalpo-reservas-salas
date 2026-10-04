@@ -80,6 +80,14 @@ export class ReservarPage implements OnInit, ViewWillEnter {
     'Acopio de material'
   ];
 
+  /** Formato compacto del horario para el encabezado: "08:00-09:00" -> "08-09". */
+  horarioCorto(horario: string): string {
+    const [inicio, fin] = horario.split('-');
+    const h1 = inicio?.split(':')[0] ?? '';
+    const h2 = fin?.split(':')[0] ?? '';
+    return `${h1}-${h2}`;
+  }
+
   /** Aplica un motivo sugerido al campo. Si ya estaba puesto, lo limpia (toggle). */
   seleccionarMotivo(motivo: string) {
     this.proposito = this.proposito.trim() === motivo ? '' : motivo;

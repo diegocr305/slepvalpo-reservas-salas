@@ -267,6 +267,12 @@ sin sufijo = estable de producción.
     con menos gap entre ellas y hacia los chips de motivo. Placeholder del motivo acortado
     ("Toca un motivo o escribe uno…") para que no se corte en el panel angosto; fuente del
     textarea reducida.
+  - `1.9.0`: grilla de disponibilidad AHORA FLUIDA en escritorio. Antes tenía anchos fijos en
+    px (celdas 50px) → no se adaptaba al cambiar de monitor/resolución y obligaba a scroll.
+    Ahora las celdas usan `flex: 1 1 0` (sin min-width) y se reparten el ancho disponible, con
+    `overflow-x: hidden`: se ven las 11 horas completas sin scroll en cualquier pantalla de
+    laptop/desktop. Encabezados de hora en formato compacto "08-09" (método `horarioCorto`).
+    En móvil (<992px) la grilla mantiene scroll-x (son muchas columnas para un celular).
 
 ### Comandos para subir versión
 ```
