@@ -204,23 +204,58 @@
   // Compactar la grilla en escritorio para que QUEPA junto al panel (sin scroll-x ni zoom)
   .sala-column-header,
   .sala-info {
-    width: 120px;
-    min-width: 120px;
-    padding: 8px;
+    width: 110px;
+    min-width: 110px;
+    padding: 6px 8px;
   }
   .horario-header,
   .horario-slot {
-    min-width: 56px;
+    min-width: 50px;
   }
   .horario-slot {
-    height: 42px;
+    height: 38px;
   }
   .horario-header {
-    font-size: 0.68rem;
-    padding: 6px 2px;
+    font-size: 0.66rem;
+    padding: 5px 2px;
   }
   .sala-nombre {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
+  }
+
+  // --- Compactar la zona superior (fecha + edificio) para ganar alto vertical ---
+  // Fecha y boton "Elegir fecha" en una sola fila
+  .fecha-principal {
+    padding: 4px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+  .botones-accion {
+    margin: 0;
+  }
+  .fecha-navegacion {
+    gap: 14px;
+    margin-bottom: 0;
+  }
+  .fecha-navegacion h1 {
+    font-size: 1.15em;
+  }
+  .flecha-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 18px;
+  }
+  .edificio-selector {
+    padding: 8px 16px;
+  }
+  .seccion-titulo {
+    padding: 8px 16px;
+  }
+  .seccion-titulo h3 {
+    font-size: 1rem;
+    margin: 0;
   }
 }
 

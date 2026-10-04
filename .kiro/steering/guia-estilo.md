@@ -259,6 +259,10 @@ sin sufijo = estable de producción.
     organizador). `ResponsableSearchComponent` ahora emite `null` al quitar, y el formulario
     deshabilita Confirmar al no haber organizador. Evita tener que reemplazar por otro para
     corregir una selección errónea.
+  - `1.8.3`: compactación vertical en escritorio para que todo quepa sin zoom. La fecha y el
+    botón "Elegir fecha" van en una sola fila; flechas de navegación más pequeñas (34px);
+    menos padding en fecha/edificio/título. Grilla aún más compacta (columna sala 110px,
+    celdas 50px, filas 38px) para eliminar el scroll horizontal junto al panel.
 
 ### Comandos para subir versión
 ```
